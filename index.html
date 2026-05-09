@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meu Termo</title>
+  <style>
+    :root {
+      --bg: #6f666e;
+      --panel: #5e565d;
+      --tile-empty: #2d282d;
+      --tile-border: rgba(255,255,255,.08);
+      --text: #ffffff;
+      --muted: rgba(255,255,255,.72);
+      --wrong: #2d282d;
+      --present: #d7b566;
+      --correct: #43aa9b;
+      --key: #403941;
+      --key-hover: #4a434c;
+      --accent: #149df2;
+      --danger: #d85b5b;
+      --shadow: 0 18px 50px rgba(0,0,0,.24);
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+    }
+
+    .app {
+      width: min(100%, 820px);
+      min-height: 100vh;
+      padding: 14px 14px 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      position: relative;
+    }
+
+    header {
+      width: min(100%, 560px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-left,
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 96px;
+    }
+
+    .header-right { justify-content: flex-end; }
+
+    h1 {
+      margin: 0;
+      text-align: center;
+      font-size: clamp(28px, 6vw, 38px);
+      font-weight: 900;
+      letter-spacing: 1px;
+      line-height: 1;
+    }
+
+    button {
+      border: 0;
+      color: var(--text);
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .icon-button {
+      width: 33px;
+      height: 33px;
+      border: 2px solid rgba(255,255,255,.35);
+      border-radius: 7px;
+      background: transparent;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      opacity: .9;
+    }
+
+    .icon-button:hover { background: rgba(255,255,255,.08); }
+
+    .hint-bar {
+      background: var(--accent);
+      padding: 9px 18px;
+      border-radius: 7px;
+      min-width: min(92vw, 330px);
+      text-align: center;
+      font-size: clamp(16px, 4vw, 22px);
+      font-weight: 800;
+      letter-spacing: .5px;
+      box-shadow: 0 7px 18px rgba(0,0,0,.12);
+    }
+
+    .board {
+      display: grid;
+      grid-template-rows: repeat(6, 1fr);
+      gap: 5px;
+      width: min(92vw, 405px);
+      aspect-ratio: 5 / 6;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+    }
+
+    .tile {
+      border-radius: var(--radius);
+      background: var(--tile-empty);
+      border: 1px solid var(--tile-border);
+      display: grid;
+      place-items: center;
+      font-size: clamp(26px, 7vw, 48px);
+      line-height: 1;
+      font-weight: 900;
+      text-transform: uppercase;
+      user-select: none;
+      transition: transform .13s ease, background .18s ease;
+    }
+
+    .tile.filled { transform: scale(.985); }
+    .tile.correct { background: var(--correct); }
+    .tile.present { background: var(--present); }
+    .tile.wrong { background: var(--wrong); }
+
+    .tile.reveal {
+      animation: flip .42s ease both;
+    }
+
+    @keyframes flip {
+      0% { transform: rotateX(0); }
+      45% { transform: rotateX(90deg); }
+      100% { transform: rotateX(0); }
+    }
+
+    .row.shake { animation: shake .34s ease both; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-7px); }
+      40% { transform: translateX(7px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(5px); }
+    }
+
+    .keyboard {
+      width: min(100%, 700px);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 2px;
+    }
+
+    .key-row {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .key {
+      height: clamp(48px, 7.8vw, 68px);
+      min-width: 0;
+      flex: 1;
+      max-width: 61px;
+      border-radius: 5px;
+      background: var(--key);
+      border: 2px solid transparent;
+      font-size: clamp(18px, 4vw, 27px);
+      letter-spacing: .8px;
+      box-shadow: inset 0 -2px rgba(0,0,0,.16);
+      transition: background .15s ease, border-color .15s ease, box-shadow .15s ease, transform .08s ease;
+    }
+
+    .key:hover { background: var(--key-hover); }
+
+    .key.wide {
+      flex: 1.65;
+      max-width: 150px;
+      font-size: clamp(13px, 3.2vw, 22px);
+      padding: 0 10px;
+    }
+
+    .key.used {
+      border-color: rgba(255,255,255,.86);
+      box-shadow: inset 0 -3px rgba(0,0,0,.22), 0 0 0 2px rgba(0,0,0,.24), 0 0 14px rgba(255,255,255,.18);
+      transform: translateY(-1px);
+    }
+
+    .key.correct {
+      background: var(--correct);
+      opacity: 1;
+      color: #fff;
+    }
+
+    .key.present {
+      background: var(--present);
+      opacity: 1;
+      color: #fff;
+    }
+
+    .key.wrong {
+      background: #171418;
+      opacity: 1;
+      color: rgba(255,255,255,.55);
+      border-color: rgba(255,255,255,.38);
+    }
+
+    .toast {
+      position: fixed;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(28, 25, 29, .96);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-weight: 800;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease, transform .2s ease;
+      z-index: 20;
+      max-width: min(92vw, 520px);
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(4px);
+    }
+
+    dialog {
+      width: min(92vw, 620px);
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 16px;
+      background: #272329;
+      color: var(--text);
+      box-shadow: var(--shadow);
+      padding: 0;
+    }
+
+    dialog::backdrop { background: rgba(0,0,0,.48); }
+
+    .modal-content { padding: 20px; }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .close-button {
+      width: 34px;
+      height: 34px;
+      background: #3e3740;
+      border-radius: 8px;
+      font-size: 20px;
+    }
+
+    .modal-content p {
+      color: var(--muted);
+      line-height: 1.45;
+      margin: 10px 0;
+    }
+
+    .modal-content textarea,
+    .modal-content input {
+      width: 100%;
+      background: #18151a;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 10px;
+      padding: 12px;
+      font: inherit;
+      outline: none;
+    }
+
+    .modal-content textarea {
+      min-height: 190px;
+      resize: vertical;
+      text-transform: uppercase;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .action-button {
+      background: var(--accent);
+      border-radius: 10px;
+      padding: 11px 15px;
+      font-size: 15px;
+    }
+
+    .action-button.secondary { background: #49424b; }
+    .action-button.danger { background: var(--danger); }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin: 16px 0 6px;
+    }
+
+    .stat-card {
+      background: #18151a;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 12px;
+      padding: 13px 8px;
+      text-align: center;
+    }
+
+    .stat-card strong {
+      display: block;
+      font-size: 26px;
+      margin-bottom: 4px;
+    }
+
+    .stat-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .small-note {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 440px) {
+      .app { padding-left: 8px; padding-right: 8px; }
+      .board { gap: 4px; width: min(94vw, 375px); }
+      .row { gap: 4px; }
+      .keyboard { gap: 7px; }
+      .key-row { gap: 5px; }
+      .header-left,
+      .header-right { min-width: 74px; }
+      .icon-button { width: 31px; height: 31px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" aria-label="Jogo de palavras">
+    <header>
+      <div class="header-left">
+        <button class="icon-button" id="newGameBtn" title="Nova palavra">↻</button>
+        <button class="icon-button" id="helpBtn" title="Como jogar">?</button>
+      </div>
+      <h1>TERMO</h1>
+      <div class="header-right">
+        <button class="icon-button" id="statsBtn" title="Estatísticas">▥</button>
+        <button class="icon-button" id="wordsBtn" title="Banco de palavras">⚙</button>
+      </div>
+    </header>
+
+    <div class="hint-bar" id="hintBar">palavra certa: ?????</div>
+
+    <section class="board" id="board" aria-label="Tabuleiro"></section>
+
+    <section class="keyboard" id="keyboard" aria-label="Teclado virtual"></section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="helpDialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Como jogar</h2>
+        <button class="close-button" data-close="helpDialog">×</button>
+      </div>
+      <p>Descubra a palavra de 5 letras em até 6 tentativas. Depois de cada tentativa, as cores mostram o quão perto você chegou.</p>
+      <p><strong>Verde:</strong> letra certa no lugar certo.</p>
+      <p><strong>Amarelo:</strong> letra existe na palavra, mas está em outra posição.</p>
+      <p><strong>Escuro:</strong> letra não existe na palavra.</p>
+      <p>A lógica respeita letras repetidas. Se a palavra certa tiver apenas um “A”, o jogo não marca dois “A” como corretos/amarelos por engano.</p>
+    </div>
+  </dialog>
+
+  <dialog id="wordsDialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Banco de palavras</h2>
+        <button class="close-button" data-close="wordsDialog">×</button>
+      </div>
+      <p>Adicione quantas palavras quiser. Use apenas palavras de 5 letras. Pode separar por linha, vírgula, ponto e vírgula ou espaço.</p>
+      <textarea id="wordListInput" spellcheck="false"></textarea>
+      <div class="modal-actions">
+        <button class="action-button" id="saveWordsBtn">Salvar palavras</button>
+        <button class="action-button secondary" id="addWordBtn">Adicionar palavra manual</button>
+        <button class="action-button danger" id="resetWordsBtn">Restaurar lista inicial</button>
+      </div>
+      <p class="small-note" id="wordCountNote"></p>
+    </div>
+  </dialog>
+
+  <dialog id="manualWordDialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Escolher palavra</h2>
+        <button class="close-button" data-close="manualWordDialog">×</button>
+      </div>
+      <p>Digite uma palavra de 5 letras para ser a próxima resposta. Ela também será adicionada ao banco local.</p>
+      <input id="manualWordInput" maxlength="5" autocomplete="off" />
+      <div class="modal-actions">
+        <button class="action-button" id="startManualWordBtn">Começar com esta palavra</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="statsDialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Estatísticas</h2>
+        <button class="close-button" data-close="statsDialog">×</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><strong id="gamesStat">0</strong><span>Jogos</span></div>
+        <div class="stat-card"><strong id="winsStat">0</strong><span>Vitórias</span></div>
+        <div class="stat-card"><strong id="winRateStat">0%</strong><span>Aproveitamento</span></div>
+        <div class="stat-card"><strong id="streakStat">0</strong><span>Sequência</span></div>
+      </div>
+      <div class="modal-actions">
+        <button class="action-button secondary" id="shareBtn">Copiar resultado</button>
+        <button class="action-button danger" id="resetStatsBtn">Zerar estatísticas</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    const WORD_LENGTH = 5;
+    const MAX_ATTEMPTS = 6;
+
+    const DEFAULT_WORDS = [
+      "SAGAZ", "AMAGO", "TERMO", "NEGRO", "EXITO", "MEXER", "NOBRE", "SENSO", "ETICA", "AFETO",
+      "ALGOZ", "FAZER", "PLENA", "TENUE", "ASSIM", "SOBRE", "MUTUA", "AQUEM", "PODER", "SECAO",
+      "VIGOR", "POREM", "SUTIL", "FOSSE", "CERNE", "IDEIA", "SANAR", "AUDAZ", "MORAL", "INATO",
+      "MUITO", "JUSTO", "DESDE", "HONRA", "SONHO", "TORPE", "AMIGO", "RAZAO", "ICONE", "ETNIA",
+      "FUTIL", "ANEXO", "DENGO", "TANGE", "HAVER", "LAPSO", "ENTAO", "TEMPO", "EXPOR", "SEARA",
+      "SABER", "HABIL", "GRACA", "MUTUO", "CASAL", "OBICE", "AVIDO", "DIZER", "ARDIL", "ESTAR",
+      "PESAR", "DEVER", "CAUSA", "TENAZ", "AINDA", "SENDO", "TEMOR", "CRIVO", "BRADO", "PARIA",
+      "COSER", "APICE", "GENRO", "COMUM", "POSSE", "PROLE", "ASSAZ", "CORJA", "ANIMO", "FUGAZ",
+      "CEDER", "PAUTA", "CENSO", "DETEM", "CULTO", "ANSIA", "ATROZ", "DIGNO", "MUNDO", "FORTE",
+      "MESMO", "VULGO", "VICIO", "SAUDE", "GLEBA", "CRIAR", "TODOS", "COZER", "REVES", "JEITO",
+      "PUDOR", "DOGMA", "VALHA", "DENSO", "NENEM", "LOUCO", "LIMBO", "ORDEM", "ATRAS", "REGRA",
+      "PEDIR", "FELIZ", "HOMEM", "AJUDA", "CLAVA", "USURA", "MERCE", "IMPOR", "BANAL", "COISA",
+      "FALSO", "JUIZO", "LEGAL", "FORMA", "SABIO", "FALAR", "CERTO", "PROSA", "SERVO", "TENRO",
+      "PIFIO", "PRESA", "POSSO", "DESSE", "HEROI", "CUNHO", "DEVIR", "FACIL", "VIRIL", "ONTEM",
+      "VENDO", "VALOR", "VISAR", "LINDA", "MANSO", "SERIO", "EBRIO", "GUISA", "MAGOA", "ACASO",
+      "MEIGA", "IMPIO", "PUDER", "FLUIR", "AFAGO", "LUGAR", "ABRIR", "TEMER", "GARBO", "PRAXE",
+      "UNIAO", "GERAR", "BURRO", "OBTER", "MATIZ", "OBVIO", "CISMA", "BRUMA", "VENIA", "AFINS",
+      "EXODO", "CRISE", "PLENO", "ALIBI", "RITMO", "TEDIO", "FLUXO", "MORTE", "LEVAR", "SENIL",
+      "OLHAR", "CASTA", "HAVIA", "TOMAR", "ENFIM", "VISAO", "OUVIR", "GENIO", "PARVO", "PRUMO",
+      "CABAL", "BREGA", "PARCO", "RELES", "FALTA", "CALMA", "VITAL", "OUTRO", "BRAVO", "TECER",
+      "FAVOR", "PULHA", "TERRA", "RETER", "VIVAZ", "VIVER", "AMENO", "SABIA", "FORCA", "UNICO",
+      "TENDO", "LAICO", "PASSO", "NICHO", "VALIA", "ACHAR", "GRATO", "NOSSA", "CARMA", "REVER",
+      "PAPEL", "NOCAO", "RANCO", "POBRE", "POSSA", "ROGAR", "NOITE", "DUBIO", "FARDO", "ATIVO",
+      "FACAM", "FARSA", "COESO", "EPICO", "FATOR", "ANELO", "CLARO", "LIDER", "LEIGO", "SESTA",
+      "SELAR", "OBITO", "VAZIO", "CIUME", "CISAO", "CESTA", "SONSO", "FICAR", "CITAR", "SINTO",
+      "DETER", "ATUAR", "VELHO", "GENTE", "HASTE", "ADIAR", "FONTE", "TENDE", "PONTO", "HUMOR",
+      "REVEL", "IDEAL", "SULCO", "SENAO", "ARDUO", "LABOR", "REMIR", "TERNO", "IGUAL", "MARCO",
+      "HIATO", "FEIXE", "EXATO", "CAPAZ", "AMPLO", "DEBIL", "TANTO", "LAVRA", "VEMOS", "RELVA",
+      "CICLO", "CAUDA", "TENRA", "INATA", "JOVEM", "VARAO", "CHUVA", "RAIVA", "OTICA", "GESTO",
+      "CACAR", "AMBOS", "POUCO", "TOADA", "VELAR", "SONSA", "COCAR", "APOIO", "SERIE", "VACUO",
+      "IMUNE", "XEQUE", "ALGUM", "FARAO", "FEITO", "VIMOS", "HORDA", "CARRO", "FUSAO", "ENTRE",
+      "ADVEM", "LEITO", "SORTE", "COESA", "PROBO", "MINHA", "TRAMA", "CRUEL", "SENTE", "DOIDO",
+      "ANUIR", "LAZER", "FRASE", "BRISA", "IMPAR", "VERSO", "CHATA", "RIGOR", "MASSA", "PEGAR",
+      "TORCO", "PRECE", "MAIOR", "BOTAR", "SEITA", "AUREA", "DORSO", "SAIBA", "AGORA", "SIGNO",
+      "FAUNA", "FUROR", "MOCAO", "LIVRO", "PLANO", "LIAME", "VETOR", "COMER", "COVIL", "PRESO",
+      "SENDA", "OCASO", "CREDO", "CASTO", "FLORA", "MORAR", "PRAIA", "PECHA", "FAINA", "NUNCA",
+      "ALIAS", "DOCIL", "ADEUS", "HOUVE", "PESTE", "ARDOR", "MUDAR", "ARIDO", "SETOR", "PARTE",
+      "MANHA", "AMBAS", "PEIXE", "RISCO", "ANTRO", "REZAR", "VISSE", "PAJEM", "ESTAO", "JUNTO",
+      "GRUPO", "VIRUS", "VULTO", "AVARO", "SALVO", "MESES", "CAMPO", "OTIMO", "SAIDA", "BEATA",
+      "BREVE", "VASTO", "INDIO", "ACESO", "ANTES", "MORRO", "CONTA", "SINAL", "VERBO", "ANDAR",
+      "ANAIS", "LENDA", "REGER", "AUREO", "BANZO", "PRADO", "FUGIR", "ACIMA", "SERAO", "OPCAO",
+      "FESTA", "VILAO", "CHULO", "RAPAZ", "NACAO", "TEXTO", "SEGUE", "LEITE", "MOTIM", "BIRRA",
+      "FRUIR", "TIRAR", "TRETA", "PARAR", "BRAVA", "FITAR", "BONUS", "ATRIO", "IDOLO", "PUXAR",
+      "JAZIA", "ATOMO", "FILHO", "TURBA", "ALUDE", "TOSCO", "GERIR", "REINO", "TENSO", "PROVA",
+      "PRAZO", "TRAGA", "NORMA", "EXAME", "EPOCA", "VORAZ", "CORPO", "ACESA", "CHEIO", "SARCA",
+      "LIGAR", "PRETO", "NOSSO", "MALTA", "BANDO", "AONDE", "MAGIA", "ARCAR", "QUASE", "COPIA",
+      "VENAL", "FATOS", "LOGRO", "LONGE", "AVIAO", "AFORA", "FATAL", "DESSA", "CERTA", "PRAGA",
+      "SEXTA", "QUOTA", "NIVEL", "OASIS", "FIXAR", "MENTE", "GLOSA", "MESSE", "NODOA", "LIDAR",
+      "APEGO", "POMPA", "APELO", "PERDA", "VERVE", "PARCA", "TOCAR", "ALADO", "CAIXA", "LIVRE",
+      "FRACO", "SUMIR", "TINHA", "PORTA", "VEZES", "GRAVE", "SOLDO", "FIRME", "LINDO", "BATER",
+      "CANON", "OPACO", "SOLTO", "IRMAO", "BESTA", "FAIXA", "ASTRO", "SALVE", "ATUAL", "ELITE",
+      "TURVA", "TRUPE", "VIRAO", "SUPRA", "NAVIO", "FENDA", "DEIXA", "CIOSO", "JUNCO", "GRATA",
+      "ALCAR", "PARDO", "AUTOR", "CURSO", "PIQUE", "CHATO", "BIOMA", "EXIJO", "DOUTO", "BICHO",
+      "DESTA", "ALUNO", "MACIO", "PAGAO", "ETICO", "MENOS", "COUSA", "CALDA", "CABER", "FICHA",
+      "POSTO", "RADIO", "VIDEO", "ABUSO", "CULPA", "LAPIS", "SUPOR", "ZELAR", "JUDEU", "GOSTO",
+      "SUPER", "SUAVE", "VERBA", "ADVIR", "AGUDO", "EXTRA", "BAIXO", "MOLHO", "RETEM", "TORSO",
+      "PIADA", "FACHO", "SITIO", "RUINA", "PEITO", "VINHA", "VOSSO", "TURMA", "IGNEO", "PASSA",
+      "PODIO", "TRACO", "ASILO", "AMENA", "POETA", "LASSO", "PISAR", "FOREM", "BRABO", "MESMA",
+      "LOCAL", "MEDIR", "DRAMA", "BUSCA", "MEIGO", "ERETO", "TESTE", "OPTAR", "FINDA", "POEMA",
+      "CLIMA", "TENTO", "CUTIS", "AVISO", "FOLGA", "AUTOS", "CORAL", "GERAL", "SURJA", "FACTO",
+      "COCHO", "SALMO", "CANSO", "CERCA", "PAVOR", "MINAR", "DENSA", "CHEIA", "CIFRA", "RECEM",
+      "IRADO", "COROA", "URDIR", "CLERO", "REGIO", "VISTO", "CINTO", "QUAIS", "VAGAR", "LETRA",
+      "FERPA", "BURRA", "HORTO", "TROCA", "DERAM", "PICHE", "PODAR", "APEAR", "FOLIA", "PRECO",
+      "POLIS", "AUDIO", "UMIDO", "VIGER", "BULIR", "TROCO", "FROTA", "OUTRA", "MOCHO", "NESTE",
+      "DISSO", "MONTA", "CHAVE", "ILESO", "COSMO", "MATAR", "RESTO", "SEIVA", "MANTO", "CHAGA",
+      "REDOR", "FALSA", "BARRO", "MISTO", "MOVER", "RETRO", "BOLSO", "LIMPO", "CIVEL", "VAZIA",
+      "LABIA", "BEDEL", "SACAR", "LOUCA", "CAMPA", "NARIZ", "VELOZ", "BARAO", "NACAR", "LOURO",
+      "SAMBA", "LOGIA", "SABOR", "JUSTA", "MIMAR", "LUTAR", "DADOS", "ALBUM", "TOQUE", "BANTO",
+      "MACHO", "GEMER", "AXIAL", "LUCRO", "ZUMBI", "LONGO", "COEVO", "PORCA", "PUNHA", "ARROZ",
+      "PAGAR", "RENTE", "ENJOO", "CALCA", "DIABO", "SUBIR", "SALVA", "FARTO", "URGIR", "FINDO",
+      "LOUSA", "XAMPU", "CALVO", "VENHO", "VALER", "BAIXA", "PLUMA", "FOCAR", "OUSAR", "FATUO",
+      "BRUXA", "SEXTO", "HIFEN", "FIRMA", "SIGLA", "REPOR", "TORNA", "PULAR", "FORRO", "LENTO",
+      "SOLTA", "CARDO", "CORTE", "BUGRE", "GUETO", "RELER", "FEIRA", "FUGIU", "CUSTO", "TENIS",
+      "CORAR", "FAZES", "VARIO", "MANIA", "NESGA", "SADIO", "CANIL", "DEMAO", "RACIO", "FERIR",
+      "VERSA", "MODAL", "HAREM", "SOCIO", "MIOPE", "PUIDO", "SUGAR", "DIGNA", "CEIFA", "TUMBA",
+      "PATIO"
+    ];
+
+    const STORAGE_KEYS = {
+      words: "meu-termo-palavras-v1",
+      stats: "meu-termo-stats-v1"
+    };
+
+    const KEYBOARD_ROWS = [
+      ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+      ["A", "S", "D", "F", "G", "H", "J", "K", "L", "⌫"],
+      ["Z", "X", "C", "V", "B", "N", "M", "ENTER"]
+    ];
+
+    const board = document.getElementById("board");
+    const keyboard = document.getElementById("keyboard");
+    const hintBar = document.getElementById("hintBar");
+    const toast = document.getElementById("toast");
+
+    const helpDialog = document.getElementById("helpDialog");
+    const wordsDialog = document.getElementById("wordsDialog");
+    const manualWordDialog = document.getElementById("manualWordDialog");
+    const statsDialog = document.getElementById("statsDialog");
+
+    let words = loadWords();
+    let answer = "";
+    let currentRow = 0;
+    let currentCol = 0;
+    let boardState = Array.from({ length: MAX_ATTEMPTS }, () => Array(WORD_LENGTH).fill(""));
+    let gameOver = false;
+    let lastResult = null;
+    let keyStatuses = {};
+    let pendingTimers = [];
+    let gameId = 0;
+
+    init();
+
+    function init() {
+      renderBoard();
+      renderKeyboard();
+      bindEvents();
+      startNewGame();
+    }
+
+    function normalizeWord(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z]/g, "")
+        .toUpperCase();
+    }
+
+    function parseWords(text) {
+      return [...new Set(
+        String(text || "")
+          .split(/[\s,;\.]+/g)
+          .map(normalizeWord)
+          .filter(word => word.length === WORD_LENGTH)
+      )].sort();
+    }
+
+    function loadWords() {
+      const stored = localStorage.getItem(STORAGE_KEYS.words);
+      const parsed = stored ? parseWords(stored) : [];
+      const defaults = parseWords(DEFAULT_WORDS.join("\n"));
+      return parsed.length ? parsed : defaults;
+    }
+
+    function saveWords() {
+      localStorage.setItem(STORAGE_KEYS.words, words.join("\n"));
+      updateWordPanel();
+    }
+
+    function getStats() {
+      const fallback = { games: 0, wins: 0, streak: 0, maxStreak: 0, distribution: [0,0,0,0,0,0] };
+      try {
+        return { ...fallback, ...JSON.parse(localStorage.getItem(STORAGE_KEYS.stats)) };
+      } catch {
+        return fallback;
+      }
+    }
+
+    function saveStats(stats) {
+      localStorage.setItem(STORAGE_KEYS.stats, JSON.stringify(stats));
+    }
+
+    function renderBoard() {
+      board.innerHTML = "";
+      for (let r = 0; r < MAX_ATTEMPTS; r++) {
+        const row = document.createElement("div");
+        row.className = "row";
+        row.dataset.row = r;
+        for (let c = 0; c < WORD_LENGTH; c++) {
+          const tile = document.createElement("div");
+          tile.className = "tile";
+          tile.dataset.row = r;
+          tile.dataset.col = c;
+          row.appendChild(tile);
+        }
+        board.appendChild(row);
+      }
+    }
+
+    function renderKeyboard() {
+      keyboard.innerHTML = "";
+      for (const rowKeys of KEYBOARD_ROWS) {
+        const row = document.createElement("div");
+        row.className = "key-row";
+        for (const key of rowKeys) {
+          const button = document.createElement("button");
+          button.className = key.length > 1 ? "key wide" : "key";
+          button.textContent = key;
+          button.dataset.key = key;
+          button.addEventListener("click", () => handleKey(key));
+          row.appendChild(button);
+        }
+        keyboard.appendChild(row);
+      }
+    }
+
+    function bindEvents() {
+      document.addEventListener("keydown", event => {
+        if (event.metaKey || event.ctrlKey || event.altKey) return;
+        const key = event.key;
+        if (key === "Enter") return handleKey("ENTER");
+        if (key === "Backspace") return handleKey("⌫");
+        if (/^[a-zA-ZÀ-ÿ]$/.test(key)) return handleKey(normalizeWord(key));
+      });
+
+      document.getElementById("newGameBtn").addEventListener("click", startNewGame);
+      document.getElementById("helpBtn").addEventListener("click", () => helpDialog.showModal());
+      document.getElementById("wordsBtn").addEventListener("click", () => { updateWordPanel(); wordsDialog.showModal(); });
+      document.getElementById("statsBtn").addEventListener("click", () => { updateStatsPanel(); statsDialog.showModal(); });
+
+      document.getElementById("saveWordsBtn").addEventListener("click", () => {
+        const nextWords = parseWords(document.getElementById("wordListInput").value);
+        if (!nextWords.length) return showToast("Adicione pelo menos uma palavra válida de 5 letras.");
+        words = nextWords;
+        saveWords();
+        showToast(`${words.length} palavra(s) salvas.`);
+        startNewGame();
+      });
+
+      document.getElementById("resetWordsBtn").addEventListener("click", () => {
+        words = parseWords(DEFAULT_WORDS.join("\n"));
+        saveWords();
+        showToast("Lista inicial restaurada.");
+        startNewGame();
+      });
+
+      document.getElementById("addWordBtn").addEventListener("click", () => {
+        document.getElementById("manualWordInput").value = "";
+        manualWordDialog.showModal();
+      });
+
+      document.getElementById("startManualWordBtn").addEventListener("click", () => {
+        const manual = normalizeWord(document.getElementById("manualWordInput").value);
+        if (manual.length !== WORD_LENGTH) return showToast("A palavra precisa ter exatamente 5 letras.");
+        if (!words.includes(manual)) {
+          words.push(manual);
+          words.sort();
+          saveWords();
+        }
+        manualWordDialog.close();
+        wordsDialog.close();
+        startNewGame(manual);
+      });
+
+      document.getElementById("resetStatsBtn").addEventListener("click", () => {
+        saveStats({ games: 0, wins: 0, streak: 0, maxStreak: 0, distribution: [0,0,0,0,0,0] });
+        updateStatsPanel();
+        showToast("Estatísticas zeradas.");
+      });
+
+      document.getElementById("shareBtn").addEventListener("click", copyResult);
+
+      document.querySelectorAll("[data-close]").forEach(button => {
+        button.addEventListener("click", () => document.getElementById(button.dataset.close).close());
+      });
+    }
+
+    function startNewGame(forcedAnswer = null) {
+      clearPendingTimers();
+      gameId++;
+      answer = forcedAnswer || words[Math.floor(Math.random() * words.length)];
+      currentRow = 0;
+      currentCol = 0;
+      boardState = Array.from({ length: MAX_ATTEMPTS }, () => Array(WORD_LENGTH).fill(""));
+      gameOver = false;
+      lastResult = null;
+      keyStatuses = {};
+      hintBar.textContent = "palavra certa: ?????";
+
+      document.querySelectorAll(".tile").forEach(tile => {
+        tile.textContent = "";
+        tile.className = "tile";
+        tile.style.animationDelay = "0ms";
+      });
+      document.querySelectorAll(".row").forEach(row => row.classList.remove("shake"));
+      document.querySelectorAll(".key").forEach(key => key.classList.remove("used", "correct", "present", "wrong"));
+    }
+
+    function handleKey(key) {
+      if (gameOver) {
+        if (key === "ENTER") startNewGame();
+        return;
+      }
+
+      if (key === "ENTER") return submitGuess();
+      if (key === "⌫") return deleteLetter();
+
+      const letter = normalizeWord(key);
+      if (letter.length === 1 && currentCol < WORD_LENGTH) {
+        boardState[currentRow][currentCol] = letter;
+        updateTile(currentRow, currentCol, letter);
+        currentCol++;
+      }
+    }
+
+    function updateTile(row, col, letter) {
+      const tile = getTile(row, col);
+      tile.textContent = letter;
+      tile.classList.toggle("filled", Boolean(letter));
+    }
+
+    function deleteLetter() {
+      if (currentCol === 0) return;
+      currentCol--;
+      boardState[currentRow][currentCol] = "";
+      updateTile(currentRow, currentCol, "");
+    }
+
+    function submitGuess() {
+      if (currentCol < WORD_LENGTH) {
+        shakeRow(currentRow);
+        return showToast("Digite 5 letras.");
+      }
+
+      const guess = boardState[currentRow].join("");
+      const result = evaluateGuess(guess, answer);
+      revealRow(currentRow, result);
+      updateKeyboard(guess, result);
+
+      if (guess === answer) {
+        gameOver = true;
+        const solvedAnswer = answer;
+        const solvedAttempts = currentRow + 1;
+        const activeGameId = gameId;
+        lastResult = { won: true, attempts: solvedAttempts, rows: solvedAttempts };
+        updateGameStats(true, solvedAttempts);
+        queueTimer(() => {
+          if (activeGameId !== gameId) return;
+          hintBar.textContent = `palavra certa: ${solvedAnswer}`;
+          showToast(`Acertou em ${solvedAttempts} tentativa(s).`);
+        }, 1300);
+        return;
+      }
+
+      currentRow++;
+      currentCol = 0;
+
+      if (currentRow >= MAX_ATTEMPTS) {
+        gameOver = true;
+        const solvedAnswer = answer;
+        const activeGameId = gameId;
+        lastResult = { won: false, attempts: MAX_ATTEMPTS, rows: MAX_ATTEMPTS };
+        updateGameStats(false);
+        queueTimer(() => {
+          if (activeGameId !== gameId) return;
+          hintBar.textContent = `palavra certa: ${solvedAnswer}`;
+          showToast(`Fim de jogo. A palavra era ${solvedAnswer}.`);
+        }, 1300);
+      }
+    }
+
+    function evaluateGuess(guess, target) {
+      const result = Array(WORD_LENGTH).fill("wrong");
+      const remaining = {};
+
+      for (let i = 0; i < WORD_LENGTH; i++) {
+        if (guess[i] === target[i]) {
+          result[i] = "correct";
+        } else {
+          remaining[target[i]] = (remaining[target[i]] || 0) + 1;
+        }
+      }
+
+      for (let i = 0; i < WORD_LENGTH; i++) {
+        if (result[i] === "correct") continue;
+        const letter = guess[i];
+        if (remaining[letter] > 0) {
+          result[i] = "present";
+          remaining[letter]--;
+        }
+      }
+
+      return result;
+    }
+
+    function revealRow(rowIndex, result) {
+      const activeGameId = gameId;
+      for (let c = 0; c < WORD_LENGTH; c++) {
+        const tile = getTile(rowIndex, c);
+        queueTimer(() => {
+          if (activeGameId !== gameId) return;
+          tile.classList.add("reveal");
+          tile.classList.add(result[c]);
+        }, c * 160);
+      }
+    }
+
+    function updateKeyboard(guess, result) {
+      const rank = { wrong: 1, present: 2, correct: 3 };
+      const activeGameId = gameId;
+
+      for (let i = 0; i < WORD_LENGTH; i++) {
+        const letter = guess[i];
+        const next = result[i];
+        const current = keyStatuses[letter];
+
+        if (!current || rank[next] > rank[current]) {
+          keyStatuses[letter] = next;
+        }
+
+        queueTimer(() => {
+          if (activeGameId !== gameId) return;
+          paintKey(letter, keyStatuses[letter]);
+        }, 250 + i * 160);
+      }
+    }
+
+    function paintKey(letter, status) {
+      const key = document.querySelector(`[data-key="${letter}"]`);
+      if (!key) return;
+      key.classList.remove("used", "correct", "present", "wrong");
+      key.classList.add("used", status);
+    }
+
+    function queueTimer(callback, delay) {
+      const timerId = setTimeout(() => {
+        pendingTimers = pendingTimers.filter(id => id !== timerId);
+        callback();
+      }, delay);
+      pendingTimers.push(timerId);
+      return timerId;
+    }
+
+    function clearPendingTimers() {
+      pendingTimers.forEach(timerId => clearTimeout(timerId));
+      pendingTimers = [];
+    }
+
+    function getTile(row, col) {
+      return document.querySelector(`.tile[data-row="${row}"][data-col="${col}"]`);
+    }
+
+    function shakeRow(rowIndex) {
+      const row = document.querySelector(`.row[data-row="${rowIndex}"]`);
+      row.classList.remove("shake");
+      void row.offsetWidth;
+      row.classList.add("shake");
+    }
+
+    let toastTimeout;
+    function showToast(message) {
+      clearTimeout(toastTimeout);
+      toast.textContent = message;
+      toast.classList.add("show");
+      toastTimeout = setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    function updateWordPanel() {
+      document.getElementById("wordListInput").value = words.join("\n");
+      document.getElementById("wordCountNote").textContent = `${words.length} palavra(s) disponíveis. As palavras ficam salvas neste navegador.`;
+    }
+
+    function updateGameStats(won, attempts = null) {
+      const stats = getStats();
+      stats.games++;
+      if (won) {
+        stats.wins++;
+        stats.streak++;
+        stats.maxStreak = Math.max(stats.maxStreak || 0, stats.streak);
+        if (attempts) stats.distribution[attempts - 1]++;
+      } else {
+        stats.streak = 0;
+      }
+      saveStats(stats);
+    }
+
+    function updateStatsPanel() {
+      const stats = getStats();
+      const winRate = stats.games ? Math.round((stats.wins / stats.games) * 100) : 0;
+      document.getElementById("gamesStat").textContent = stats.games;
+      document.getElementById("winsStat").textContent = stats.wins;
+      document.getElementById("winRateStat").textContent = `${winRate}%`;
+      document.getElementById("streakStat").textContent = stats.streak;
+    }
+
+    async function copyResult() {
+      if (!lastResult) return showToast("Jogue uma partida antes de copiar o resultado.");
+      const rows = [];
+      const playedRows = lastResult.rows;
+      for (let r = 0; r < playedRows; r++) {
+        const guess = boardState[r].join("");
+        if (!guess) continue;
+        const result = evaluateGuess(guess, answer);
+        rows.push(result.map(status => status === "correct" ? "🟩" : status === "present" ? "🟨" : "⬛").join(""));
+      }
+      const text = `TERMO ${lastResult.won ? lastResult.attempts : "X"}/${MAX_ATTEMPTS}\n${rows.join("\n")}`;
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("Resultado copiado.");
+      } catch {
+        showToast("Não consegui copiar automaticamente neste navegador.");
+      }
+    }
+  </script>
+</body>
+</html>
