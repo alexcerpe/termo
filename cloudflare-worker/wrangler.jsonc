@@ -1,0 +1,10 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "xadrez-realtime",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-08",
+  "durable_objects": {
+    "bindings": [{ "name": "CHESS_ROOMS", "class_name": "ChessRoom" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ChessRoom"] }]
+}
