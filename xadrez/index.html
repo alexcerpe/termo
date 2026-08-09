@@ -14,7 +14,7 @@
 <div id="promo" class="promo hidden"><div class="promoBox"><b>Promover peão para:</b><div id="promoChoices" class="promoChoices"></div></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 <script>
-const WORKER_URL='COLE_AQUI_A_URL_DO_WORKER';
+const WORKER_URL='https://xadrez-realtime.alex-cerpe.workers.dev';
 const $=s=>document.querySelector(s);let mins=5,ws=null,role=null,color=null,room=null,game=new Chess(),selected=null,legal=[],lastMove=null,pendingPromotion=null,state=null;
 const glyph={w:{k:'♔',q:'♕',r:'♖',b:'♗',n:'♘',p:'♙'},b:{k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'}};
 document.querySelectorAll('.time').forEach(b=>b.onclick=()=>{mins=+b.dataset.min;document.querySelectorAll('.time').forEach(x=>x.classList.toggle('active',x===b))});
