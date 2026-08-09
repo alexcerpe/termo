@@ -1,0 +1,10 @@
+{
+  "name": "Xadrez Online",
+  "short_name": "Xadrez",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1d1f22",
+  "theme_color": "#1d1f22",
+  "description": "Xadrez online simples para duas pessoas"
+}
