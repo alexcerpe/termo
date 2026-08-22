@@ -5,27 +5,160 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#17191c">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="styles.css?v=5">
 <title>Xadrez Online</title>
-<style>
-:root{--bg:#17191c;--panel:#25282d;--light:#e6d5b8;--dark:#8a6548;--accent:#4aa3ff;--text:#f7f8fa;--muted:#aab1bb}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Arial,sans-serif;touch-action:manipulation}body{display:flex;justify-content:center}.app{width:min(100%,620px);padding:16px 12px 26px}.brand{text-align:center;margin:3px 0 16px;letter-spacing:2px}.card,.player{background:var(--panel);border-radius:16px}.card{padding:20px;box-shadow:0 14px 35px #0005}.hidden{display:none!important}.center{text-align:center}.muted{color:var(--muted)}.btn{border:0;border-radius:11px;padding:12px 17px;background:#3a3f46;color:#fff;font-weight:800;font-size:16px;cursor:pointer}.btn.primary,.btn.active{background:var(--accent)}.btn.danger{background:#a83e45}.btn.ghost{background:transparent;border:1px solid #ffffff28}.btn:disabled{opacity:.45}.times,.actions{display:flex;gap:9px;justify-content:center;flex-wrap:wrap}.times{margin:17px 0}.continueCard{background:#202d38;border:1px solid #4aa3ff66;margin-bottom:12px}.history{margin-top:16px;text-align:left}.historyItem{padding:10px 0;border-top:1px solid #ffffff12;font-size:14px}.spinner{width:50px;height:50px;border:5px solid #ffffff20;border-top-color:var(--accent);border-radius:50%;margin:3px auto 15px;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.qr{width:210px;height:210px;margin:13px auto;background:#fff;padding:8px;border-radius:12px}.qr img,.qr canvas{width:100%!important;height:100%!important}.code{font:900 25px monospace;letter-spacing:4px}.player{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;margin:6px 0;transition:.2s}.player.active{outline:2px solid var(--accent);background:#273746}.player.offline{opacity:.55}.clock{font:900 29px/1 monospace}.status{text-align:center;font-weight:800;margin:7px 0 9px}.board{width:100%;aspect-ratio:1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));border-radius:8px;overflow:hidden;box-shadow:0 10px 30px #0007;user-select:none}.sq{display:grid;place-items:center;position:relative;min-width:0;min-height:0;aspect-ratio:1;font-size:clamp(30px,10vw,60px);overflow:hidden}.sq.light{background:var(--light)}.sq.dark{background:var(--dark)}.sq.selected{box-shadow:inset 0 0 0 5px #45a7ff}.sq.legal:after{content:"";width:22%;aspect-ratio:1;border-radius:50%;background:#1118;position:absolute}.sq.capture:after{content:"";position:absolute;inset:5%;border:5px solid #1117;border-radius:50%}.sq.last{box-shadow:inset 0 0 0 999px #f6e45c45}.sq.check{box-shadow:inset 0 0 0 999px #e22b2b88}.piece{z-index:2;line-height:1;animation:pieceIn .14s ease}.sq.last .piece{transform:scale(1.06)}@keyframes pieceIn{from{opacity:.6;transform:scale(.84)}to{opacity:1;transform:scale(1)}}.whitePiece{color:#fff;text-shadow:0 1px 2px #000}.blackPiece{color:#111}.coord{position:absolute;font:bold 10px Arial;z-index:3;opacity:.7}.coord.file{right:3px;bottom:2px}.coord.rank{left:3px;top:2px}.connection{text-align:center;font-size:11px;color:var(--muted);margin:5px}.modal{position:fixed;inset:0;background:#000b;display:grid;place-items:center;z-index:30;padding:20px}.modalBox{width:min(92vw,400px);background:var(--panel);padding:24px;border-radius:18px;text-align:center}.resultStats{background:#30343a;border-radius:12px;padding:12px;margin:14px 0}.promoChoices{display:flex;gap:8px;margin-top:12px;justify-content:center}.promoChoices button{font-size:40px}.reconnect{position:fixed;inset:0;background:#17191cef;z-index:40;display:grid;place-items:center;text-align:center}.topControls{position:fixed;right:10px;top:10px;z-index:20;display:flex;gap:6px}.topControl{padding:7px 9px;min-width:36px;height:36px;border-radius:9px;font-size:14px;background:#25282dcc;border:1px solid #ffffff12;color:#ddd}.resignTop{font-size:12px;font-weight:700;color:#aaa}.input{padding:12px;border-radius:9px;border:1px solid #ffffff22;background:#17191c;color:#fff;text-transform:uppercase;width:155px}.divider{height:1px;background:#ffffff12;margin:16px 0}.lobby{margin-top:18px;text-align:left;border-top:1px solid #ffffff12;padding-top:16px}.lobbyHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}.lobbyTitle{font-weight:800}.liveDot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#55c989;margin-right:6px}.lobbyCount{font-size:12px;color:var(--muted)}.lobbyRoom{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid #ffffff10}.lobbyRoom:first-child{border-top:0}.lobbyCode{font:800 15px monospace;letter-spacing:1.5px}.lobbyMeta{font-size:12px;color:var(--muted);margin-top:2px}.lobbyRoom .btn{font-size:13px;padding:8px 12px}.lobbyEmpty{font-size:13px;color:var(--muted);text-align:center;padding:12px 5px}.lobbyRefresh{font-size:11px;color:#777;text-align:center;margin-top:5px}
-@media(max-width:600px){body.gameMode{height:100dvh;overflow:hidden}.gameMode .app{height:100dvh;padding:0 10px;display:flex;flex-direction:column}.gameMode .brand{display:none}#game:not(.hidden){width:100%}.gameMode #game:not(.hidden){flex:1;display:flex!important;flex-direction:column;justify-content:center;min-height:0}.gameMode .board{width:min(100%,calc(100dvh - 155px));max-height:calc(100dvh - 155px);margin:0 auto}.gameMode .player{padding:7px 10px;margin:4px 0}.gameMode .clock{font-size:24px}.gameMode .status{font-size:13px;margin:3px 0}.gameMode .connection{margin:3px 0}.topControls{top:max(7px,env(safe-area-inset-top));right:7px}.topControl{height:32px;min-width:32px;padding:5px 7px}.resignTop{font-size:0;width:32px}.resignTop:after{content:'✕';font-size:15px}}
-</style>
 </head>
 <body>
-<div class="topControls"><button id="resign" class="btn topControl resignTop hidden" title="Abandonar partida">Sair</button><button id="sound" class="btn topControl">🔊</button></div>
-<main class="app"><h1 class="brand">XADREZ</h1>
-<section id="home"><div id="continueCard" class="card continueCard hidden"><b>PARTIDA EM ANDAMENTO</b><p id="continueInfo" class="muted"></p><div class="actions"><button id="continueBtn" class="btn primary">Continuar partida</button><button id="forgetBtn" class="btn ghost">Ignorar</button></div></div><div class="card center"><h2>Jogue com um amigo</h2><p class="muted">Crie uma partida e envie o convite. Sem cadastro.</p><div class="times"><button class="btn time" data-min="3">3 min</button><button class="btn time active" data-min="5">5 min</button><button class="btn time" data-min="10">10 min</button></div><button id="create" class="btn primary">CRIAR PARTIDA</button><div class="lobby"><div class="lobbyHead"><div class="lobbyTitle"><span class="liveDot"></span>Salas abertas</div><div id="lobbyCount" class="lobbyCount">carregando…</div></div><div id="lobbyRooms"><div class="lobbyEmpty">Buscando partidas…</div></div><div class="lobbyRefresh">Atualiza automaticamente</div></div><div class="divider"></div><button id="showJoin" class="btn ghost">Entrar com código</button><div id="joinBox" class="hidden" style="margin-top:12px"><input id="roomInput" class="input" placeholder="CÓDIGO" maxlength="8"><button id="joinGo" class="btn primary">Entrar</button></div><div id="history" class="history hidden"><b>Últimas partidas</b><div id="historyList"></div></div></div></section>
-<section id="waiting" class="card center hidden"><div class="spinner"></div><h2>PARTIDA CRIADA</h2><p class="muted">Aguardando seu adversário entrar…</p><div id="roomCode" class="code"></div><div id="qrcode" class="qr"></div><p id="waitingMeta" class="muted"></p><div class="actions"><button id="copyInvite" class="btn primary">Copiar convite</button><button id="cancelRoom" class="btn ghost">Cancelar partida</button></div></section>
-<section id="game" class="hidden"><div id="opponent" class="player"><span id="oppLabel">Adversário</span><span id="oppClock" class="clock">05:00</span></div><div id="status" class="status">Conectando…</div><div id="board" class="board"></div><div id="me" class="player"><span id="myLabel">Você</span><span id="myClock" class="clock">05:00</span></div><div id="connection" class="connection"></div></section>
-<div id="promo" class="modal hidden"><div class="modalBox"><b>Promover para:</b><div id="promoChoices" class="promoChoices"></div></div></div><div id="confirmLeave" class="modal hidden"><div class="modalBox"><h2>Abandonar partida?</h2><p class="muted">Seu adversário receberá a vitória.</p><div class="actions"><button id="keepPlaying" class="btn primary">Não</button><button id="confirmResign" class="btn danger">Sim</button></div></div></div><div id="resultModal" class="modal hidden"><div class="modalBox"><h1 id="resultTitle">VITÓRIA</h1><p id="resultText"></p><div id="resultStats" class="resultStats"></div><div class="actions"><button id="rematch" class="btn primary">JOGAR NOVAMENTE</button><button id="goHome" class="btn ghost">Voltar ao início</button></div><p id="rematchInfo" class="muted"></p></div></div><div id="reconnect" class="reconnect hidden"><div><div class="spinner"></div><h2>Reconectando…</h2><p class="muted">Sua partida está segura.</p></div></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script>
-const W='https://xadrez-realtime.alex-cerpe.workers.dev',$=s=>document.querySelector(s);let mins=5,ws,role,color,room,state,lastFen,selected=null,legal=[],lastMove,promo,retry,wake,resultSaved=false,game=new Chess(),soundOn=localStorage.getItem('chessSound')!=='0';const glyph={w:{k:'♔',q:'♕',r:'♖',b:'♗',n:'♘',p:'♙'},b:{k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'}};const key=(r=room,x=role)=>'chess:'+r+':'+x,getToken=(r=room,x=role)=>localStorage.getItem(key(r,x))||'',safe=s=>{try{return JSON.parse(s)}catch{return null}};function setActive(){if(room&&role)localStorage.setItem('chessActive',JSON.stringify({room,role,mins,at:Date.now()}))}function clearActive(){localStorage.removeItem('chessActive')}function view(v){['home','waiting','game'].forEach(x=>$('#'+x).classList.toggle('hidden',x!==v));const playing=v==='game';document.body.classList.toggle('gameMode',playing);$('#resign').classList.toggle('hidden',!playing)}
-document.querySelectorAll('.time').forEach(b=>b.onclick=()=>{mins=+b.dataset.min;document.querySelectorAll('.time').forEach(x=>x.classList.toggle('active',x===b))});$('#create').onclick=()=>{role='p1';room=crypto.getRandomValues(new Uint32Array(1))[0].toString(36).slice(0,6).toUpperCase().padStart(6,'0');view('waiting');connect()};$('#showJoin').onclick=()=>$('#joinBox').classList.toggle('hidden');$('#joinGo').onclick=()=>{room=$('#roomInput').value.trim().toUpperCase();if(room){role='p2';connect()}};
-async function loadLobby(){if(!$('#home')||$('#home').classList.contains('hidden'))return;try{const r=await fetch(W+'/lobby',{cache:'no-store'});if(!r.ok)throw new Error();const rooms=await r.json(),open=rooms.filter(x=>x.status==='waiting'&&x.players<2);$('#lobbyCount').textContent=open.length?open.length+' aberta'+(open.length>1?'s':''):'nenhuma';$('#lobbyRooms').innerHTML=open.length?open.map(x=>`<div class="lobbyRoom"><div><div class="lobbyCode">${x.room}</div><div class="lobbyMeta">${x.minutes} min • aguardando adversário</div></div><button class="btn primary lobbyJoin" data-room="${x.room}">ENTRAR</button></div>`).join(''):'<div class="lobbyEmpty">Nenhuma sala aberta agora.<br>Crie uma e aguarde alguém entrar.</div>';document.querySelectorAll('.lobbyJoin').forEach(b=>b.onclick=()=>{room=b.dataset.room;role='p2';connect()})}catch{$('#lobbyCount').textContent='indisponível';$('#lobbyRooms').innerHTML='<div class="lobbyEmpty">Não foi possível carregar as salas.</div>'}}
-function home(){view('home');$('#resultModal').classList.add('hidden');const a=safe(localStorage.getItem('chessActive'));if(a&&getToken(a.room,a.role)&&Date.now()-a.at<86400000){$('#continueCard').classList.remove('hidden');$('#continueInfo').textContent='Sala '+a.room+' • '+a.mins+' min';$('#continueBtn').onclick=()=>{room=a.room;role=a.role;mins=a.mins;connect(true)}}else{$('#continueCard').classList.add('hidden');clearActive()}const h=safe(localStorage.getItem('chessHistory'))||[];if(h.length){$('#history').classList.remove('hidden');$('#historyList').innerHTML=h.slice(0,5).map(x=>`<div class="historyItem"><b>${x.outcome}</b> • ${x.color} • ${x.reason}<br><span class="muted">${x.minutes} min • ${new Date(x.at).toLocaleString('pt-BR')}</span></div>`).join('')}loadLobby()}$('#forgetBtn').onclick=()=>{clearActive();$('#continueCard').classList.add('hidden')};const q=new URLSearchParams(location.search),inv=q.get('room'),sr=q.get('role');if(inv){room=inv.toUpperCase();role=sr&&getToken(room,sr)?sr:'p2';setTimeout(()=>connect(true),50)}else home();setInterval(loadLobby,3000);function invite(){return location.origin+location.pathname+'?room='+room}function own(){return location.origin+location.pathname+'?room='+room+'&role='+role}function waiting(){view('waiting');$('#roomCode').textContent=room;$('#waitingMeta').textContent=mins+' minutos • cores aleatórias';$('#qrcode').innerHTML='';new QRCode($('#qrcode'),{text:invite(),width:194,height:194})}$('#copyInvite').onclick=async()=>{try{await navigator.clipboard.writeText(invite());alert('Convite copiado!')}catch{prompt('Copie:',invite())}};$('#cancelRoom').onclick=()=>{quit();home()};
-function connect(re=false){clearTimeout(retry);const u=new URL(W);u.protocol='wss:';u.searchParams.set('room',room);u.searchParams.set('role',role);u.searchParams.set('minutes',mins);u.searchParams.set('token',getToken());if(re)$('#reconnect').classList.remove('hidden');ws=new WebSocket(u);ws.onopen=()=>{$('#reconnect').classList.add('hidden');setActive()};ws.onmessage=e=>handle(JSON.parse(e.data));ws.onclose=e=>{if(e.code===1008){$('#reconnect').classList.add('hidden');clearActive();alert(e.reason||'Sala indisponível');quit();home()}else if(room&&role&&!state?.result){$('#reconnect').classList.remove('hidden');retry=setTimeout(()=>connect(true),1500)}}}function send(type,data={}){if(ws?.readyState===1)ws.send(JSON.stringify({type,...data}))}function quit(){clearTimeout(retry);let s=ws;ws=null;room=null;role=null;state=null;clearActive();history.replaceState(null,'',location.pathname);try{s?.close()}catch{}}
-function handle(m){if(m.type==='welcome'){if(m.token)localStorage.setItem(key(),m.token);color=m.color;if(m.state)apply(m.state);history.replaceState(null,'',own());m.state?.ready?showGame():role==='p1'&&waiting()}else if(m.type==='state'){apply(m.state);if(m.state.ready)showGame()}}function showGame(){view('game');render();requestWake()}function apply(s){const prev=state,old=lastFen;state=s;color=s.colors?.[role]||color;mins=s.minutes||mins;game.load(s.fen);lastMove=s.lastMove;lastFen=s.fen;setActive();if(old&&old!==s.fen){tone(game.in_check()?620:420);if(navigator.vibrate)navigator.vibrate(25)}render();clocks();labels();if(s.result){saveResult();clearActive();$('#status').textContent=s.result;result()}else{$('#resultModal').classList.add('hidden');$('#status').textContent=!s.started?(color==='w'?'SUA VEZ • faça o primeiro lance':'Aguardando as brancas'):s.turn===color?'SUA VEZ':'Vez do adversário'}if(prev?.round&&s.round!==prev.round){selected=null;legal=[];resultSaved=false;$('#resultModal').classList.add('hidden')}}function labels(){if(!color)return;$('#myLabel').textContent='Você • '+(color==='w'?'Brancas':'Pretas');$('#oppLabel').textContent='Adversário • '+(color==='w'?'Pretas':'Brancas');let off=state?.ready&&!state.connected?.[role==='p1'?'p2':'p1'];$('#opponent').classList.toggle('offline',off);$('#connection').textContent=off?'Adversário desconectado • aguardando reconexão':'Conectado'}function squares(){let a=[];if(color==='b'){for(let r=1;r<=8;r++)for(const f of'hgfedcba')a.push(f+r)}else for(let r=8;r>=1;r--)for(const f of'abcdefgh')a.push(f+r);return a}function render(){const b=$('#board');b.innerHTML='';let a=squares(),check;if(game.in_check())for(const s of a){let p=game.get(s);if(p?.type==='k'&&p.color===game.turn()){check=s;break}}a.forEach((s,i)=>{let f=s.charCodeAt(0)-97,r=+s[1],e=document.createElement('div');e.className='sq '+(((f+r)&1)?'light':'dark');if(selected===s)e.classList.add('selected');if(lastMove&&(lastMove.from===s||lastMove.to===s))e.classList.add('last');if(check===s)e.classList.add('check');if(legal.some(x=>x.to===s))e.classList.add(game.get(s)?'capture':'legal');let p=game.get(s);if(p){let z=document.createElement('span');z.className='piece '+(p.color==='w'?'whitePiece':'blackPiece');z.textContent=glyph[p.color][p.type];e.appendChild(z)}if(Math.floor(i/8)===7){let c=document.createElement('span');c.className='coord file';c.textContent=s[0];e.appendChild(c)}if(i%8===0){let c=document.createElement('span');c.className='coord rank';c.textContent=s[1];e.appendChild(c)}e.onclick=()=>clickSq(s);b.appendChild(e)})}function clickSq(s){if(!state?.ready||state.result||state.turn!==color)return;let p=game.get(s);if(!selected){if(p?.color===color){selected=s;legal=game.moves({square:s,verbose:true});render()}return}let m=legal.find(x=>x.to===s);if(m){if(m.flags.includes('p')){promo={from:selected,to:s};promotion();return}send('move',{from:selected,to:s,promotion:'q'});selected=null;legal=[];return}if(p?.color===color){selected=s;legal=game.moves({square:s,verbose:true})}else{selected=null;legal=[]}render()}function promotion(){let x=$('#promoChoices');x.innerHTML='';for(const t of['q','r','b','n']){let b=document.createElement('button');b.className='btn';b.textContent=glyph[color][t];b.onclick=()=>{send('move',{...promo,promotion:t});$('#promo').classList.add('hidden');selected=null;legal=[]};x.appendChild(b)}$('#promo').classList.remove('hidden')}
-function live(){let w=state?.whiteMs||mins*60000,b=state?.blackMs||mins*60000;if(state?.started&&!state.result&&state.turnStartedAt){let d=Date.now()-state.turnStartedAt;state.turn==='w'?w-=d:b-=d}return{w,b}}function fmt(m){let s=Math.ceil(Math.max(0,m)/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}function clocks(){if(!state)return;let t=live(),mine=color==='w'?t.w:t.b,opp=color==='w'?t.b:t.w;$('#myClock').textContent=fmt(mine);$('#oppClock').textContent=fmt(opp);$('#me').classList.toggle('active',state.turn===color&&!state.result);$('#opponent').classList.toggle('active',state.turn!==color&&!state.result);if(state.started&&!state.result&&(t.w<=0||t.b<=0))send('sync')}setInterval(clocks,200);$('#resign').onclick=()=>$('#confirmLeave').classList.remove('hidden');$('#keepPlaying').onclick=()=>$('#confirmLeave').classList.add('hidden');$('#confirmResign').onclick=()=>{$('#confirmLeave').classList.add('hidden');send('resign')};
-function saveResult(){if(resultSaved)return;resultSaved=true;let win=(state.result.startsWith('Brancas')&&color==='w')||(state.result.startsWith('Pretas')&&color==='b'),draw=state.result.startsWith('Empate'),reason=state.result.includes('—')?state.result.split('—')[1].trim():state.result,h=safe(localStorage.getItem('chessHistory'))||[];h.unshift({outcome:draw?'Empate':win?'Vitória':'Derrota',color:color==='w'?'Brancas':'Pretas',reason,minutes:state.minutes,at:Date.now()});localStorage.setItem('chessHistory',JSON.stringify(h.slice(0,10)))}function result(){let t=live(),mine=color==='w'?t.w:t.b,opp=color==='w'?t.b:t.w,win=(state.result.startsWith('Brancas')&&color==='w')||(state.result.startsWith('Pretas')&&color==='b'),draw=state.result.startsWith('Empate');$('#resultTitle').textContent=draw?'EMPATE':win?'VITÓRIA':'DERROTA';$('#resultText').textContent=state.result;$('#resultStats').innerHTML=`Você • ${color==='w'?'Brancas':'Pretas'} <b>${fmt(mine)}</b><br>Adversário • ${color==='w'?'Pretas':'Brancas'} <b>${fmt(opp)}</b>`;$('#rematchInfo').textContent=state.rematch?.[role]?'Aguardando o adversário aceitar…':'';$('#rematch').disabled=!!state.rematch?.[role];$('#resultModal').classList.remove('hidden');releaseWake()}$('#rematch').onclick=()=>{send('rematch');$('#rematch').disabled=true;$('#rematchInfo').textContent='Aguardando o adversário aceitar…'};$('#goHome').onclick=()=>{quit();home()};function tone(f){if(!soundOn)return;try{let A=window.AudioContext||window.webkitAudioContext,a=new A(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=.035;o.start();g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.12);o.stop(a.currentTime+.13)}catch{}}function sound(){$('#sound').textContent=soundOn?'🔊':'🔇'}$('#sound').onclick=()=>{soundOn=!soundOn;localStorage.setItem('chessSound',soundOn?'1':'0');sound()};sound();async function requestWake(){if('wakeLock'in navigator&&state?.ready&&!state.result)try{wake=await navigator.wakeLock.request('screen')}catch{}}async function releaseWake(){try{await wake?.release()}catch{}wake=null}document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&room&&role){if(!ws||ws.readyState>1)connect(true);requestWake()}else if(document.visibilityState==='visible')loadLobby()});window.addEventListener('online',()=>{if(room&&role&&(!ws||ws.readyState>1))connect(true);else loadLobby()});if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
-</script></main></body></html>
+<div class="topControls">
+  <button id="resign" class="btn topControl resignTop hidden" title="Abandonar partida">Sair</button>
+  <button id="sound" class="btn topControl">🔊</button>
+</div>
+
+<main class="app">
+  <h1 class="brand">XADREZ</h1>
+
+  <section id="home">
+    <div id="continueCard" class="card continueCard hidden">
+      <b>PARTIDA EM ANDAMENTO</b>
+      <p id="continueInfo" class="muted"></p>
+      <div class="actions">
+        <button id="continueBtn" class="btn primary">Continuar partida</button>
+        <button id="forgetBtn" class="btn ghost">Ignorar</button>
+      </div>
+    </div>
+
+    <div class="card center">
+      <h2>Jogue com um amigo</h2>
+      <p class="muted">Crie uma partida e envie o convite. Sem cadastro.</p>
+      <div class="times">
+        <button class="btn time" data-min="3">3 min</button>
+        <button class="btn time active" data-min="5">5 min</button>
+        <button class="btn time" data-min="10">10 min</button>
+        <button class="btn time" data-min="0">Sem limite</button>
+      </div>
+      <button id="create" class="btn primary">CRIAR PARTIDA</button>
+
+      <div class="lobby">
+        <div class="lobbyHead">
+          <div class="lobbyTitle"><span class="liveDot"></span>Salas abertas</div>
+          <div id="lobbyCount" class="lobbyCount">carregando…</div>
+        </div>
+        <div id="lobbyRooms"><div class="lobbyEmpty">Buscando partidas…</div></div>
+        <div class="lobbyRefresh">Atualiza automaticamente</div>
+      </div>
+
+      <div class="divider"></div>
+      <button id="showJoin" class="btn ghost">Entrar com código</button>
+      <div id="joinBox" class="hidden" style="margin-top:12px">
+        <input id="roomInput" class="input" placeholder="CÓDIGO" maxlength="8">
+        <button id="joinGo" class="btn primary">Entrar</button>
+      </div>
+
+      <div id="history" class="history hidden">
+        <b>Últimas partidas</b>
+        <div id="historyList"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="waiting" class="card center hidden">
+    <div class="spinner"></div>
+    <h2>PARTIDA CRIADA</h2>
+    <p class="muted">Aguardando seu adversário entrar…</p>
+    <div id="roomCode" class="code"></div>
+    <div id="qrcode" class="qr"></div>
+    <p id="waitingMeta" class="muted"></p>
+    <div class="actions">
+      <button id="copyInvite" class="btn primary">Copiar convite</button>
+      <button id="cancelRoom" class="btn ghost">Cancelar partida</button>
+    </div>
+  </section>
+
+  <section id="game" class="hidden">
+    <div class="gameLayout">
+      <aside class="sidePanel">
+        <div class="sideTitle">Peças capturadas</div>
+        <div id="capturedPieces"></div>
+      </aside>
+
+      <div class="gameCenter">
+        <div id="opponent" class="player">
+          <span id="oppLabel">Adversário</span>
+          <span id="oppClock" class="clock">05:00</span>
+        </div>
+        <div id="status" class="status">Conectando…</div>
+        <div id="board" class="board"></div>
+        <div id="me" class="player">
+          <span id="myLabel">Você</span>
+          <span id="myClock" class="clock">05:00</span>
+        </div>
+        <div id="connection" class="connection"></div>
+        <div class="mobileAux">
+          <button id="showCapturedMobile" class="btn ghost">Peças</button>
+          <button id="showHistoryMobile" class="btn ghost">Histórico</button>
+        </div>
+      </div>
+
+      <aside class="sidePanel">
+        <div class="sideTitle">Histórico de jogadas</div>
+        <div id="moveHistory" class="moveList"></div>
+      </aside>
+    </div>
+  </section>
+
+  <div id="promo" class="modal hidden">
+    <div class="modalBox">
+      <b>Promover para:</b>
+      <div id="promoChoices" class="promoChoices"></div>
+    </div>
+  </div>
+
+  <div id="confirmLeave" class="modal hidden">
+    <div class="modalBox">
+      <h2>Abandonar partida?</h2>
+      <p class="muted">Seu adversário receberá a vitória.</p>
+      <div class="actions">
+        <button id="keepPlaying" class="btn primary">Não</button>
+        <button id="confirmResign" class="btn danger">Sim</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultModal" class="modal hidden">
+    <div class="modalBox">
+      <h1 id="resultTitle">VITÓRIA</h1>
+      <p id="resultText"></p>
+      <div id="resultStats" class="resultStats"></div>
+      <div class="actions">
+        <button id="rematch" class="btn primary">JOGAR NOVAMENTE</button>
+        <button id="goHome" class="btn ghost">Voltar ao início</button>
+      </div>
+      <p id="rematchInfo" class="muted"></p>
+    </div>
+  </div>
+
+  <div id="auxModal" class="modal hidden">
+    <div class="modalBox">
+      <h2 id="auxTitle"></h2>
+      <div id="auxContent" class="auxContent"></div>
+      <div class="actions" style="margin-top:14px">
+        <button id="closeAux" class="btn primary">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="reconnect" class="reconnect hidden">
+    <div>
+      <div class="spinner"></div>
+      <h2>Reconectando…</h2>
+      <p class="muted">Sua partida está segura.</p>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="pieces-render.js?v=5"></script>
+<script src="app.js?v=5"></script>
+</body>
+</html>
