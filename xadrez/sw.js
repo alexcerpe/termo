@@ -1,1 +1,28 @@
-const CACHE='xadrez-v3';const ASSETS=['./','./index.html','./manifest.webmanifest','./pieces-render.js'];self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);if(e.request.mode==='navigate'&&u.pathname.includes('/xadrez')){e.respondWith(fetch(e.request).then(async r=>{let html=await r.text();if(!html.includes('pieces-render.js'))html=html.replace('</body>','<script src="pieces-render.js?v=3"></script></body>');return new Response(html,{status:r.status,statusText:r.statusText,headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-cache'}})}).catch(()=>caches.match('./index.html')));return}e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r}).catch(()=>caches.match(e.request)))})
+const CACHE='xadrez-v5';
+const ASSETS=['./','./index.html','./manifest.webmanifest','./styles.css','./app.js','./pieces-render.js'];
+
+self.addEventListener('install',event=>{
+  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
+});
+
+self.addEventListener('activate',event=>{
+  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));
+});
+
+self.addEventListener('fetch',event=>{
+  if(event.request.method!=='GET')return;
+  const url=new URL(event.request.url);
+  if(event.request.mode==='navigate'&&url.pathname.includes('/xadrez')){
+    event.respondWith(fetch(event.request,{cache:'no-store'}).then(response=>{
+      const copy=response.clone();
+      caches.open(CACHE).then(cache=>cache.put('./index.html',copy));
+      return response;
+    }).catch(()=>caches.match('./index.html')));
+    return;
+  }
+  event.respondWith(fetch(event.request).then(response=>{
+    const copy=response.clone();
+    caches.open(CACHE).then(cache=>cache.put(event.request,copy));
+    return response;
+  }).catch(()=>caches.match(event.request)));
+});
