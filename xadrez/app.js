@@ -309,4 +309,4 @@ if(inv){room=inv.toUpperCase();role=sr&&getToken(room,sr)?sr:'p2';setTimeout(()=
 setInterval(loadLobby,3000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&room&&role){if(!ws||ws.readyState>1)connect(true);requestWake()}else if(document.visibilityState==='visible')loadLobby()});
 window.addEventListener('online',()=>{if(room&&role&&(!ws||ws.readyState>1))connect(true);else loadLobby()});
-if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker'in navigator)navigator.serviceWorker.register('/xadrez/sw.js',{scope:'/xadrez/'}).catch(()=>{});
