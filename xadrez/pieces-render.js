@@ -1,1 +1,71 @@
-(()=>{const M={'♔':['w','k'],'♕':['w','q'],'♖':['w','r'],'♗':['w','b'],'♘':['w','n'],'♙':['w','p'],'♚':['b','k'],'♛':['b','q'],'♜':['b','r'],'♝':['b','b'],'♞':['b','n'],'♟':['b','p']};const P={p:'<circle cx="50" cy="31" r="15"/><path d="M34 52h32c-2 15-7 27-13 38h16l8 15H23l8-15h16c-6-11-11-23-13-38z"/><path d="M18 108h64l8 18H10z"/>',r:'<path d="M18 22h15v14h11V22h12v14h11V22h15v31l-10 9 7 44H21l7-44-10-9z"/><path d="M15 108h70l7 18H8z"/>',n:'<path d="M22 106c4-22 11-38 24-51L32 43l13-6 7-19c25 8 38 27 34 49-3 15-13 26-29 35l16 7H22z"/><circle cx="62" cy="40" r="3" class="eye"/><path d="M16 109h68l8 17H8z"/>',b:'<circle cx="50" cy="22" r="9"/><path d="M50 33c20 10 26 27 15 42L57 90h17l8 16H18l8-16h17l-8-15c-11-15-5-32 15-42z"/><path d="M46 44l10 22" class="detail"/><path d="M14 109h72l6 17H8z"/>',q:'<circle cx="18" cy="25" r="6"/><circle cx="50" cy="17" r="6"/><circle cx="82" cy="25" r="6"/><path d="M18 35l13 50 19-55 19 55 13-50-7 70H25z"/><path d="M18 108h64l9 18H9z"/>',k:'<path d="M50 9v25M39 21h22" class="detail thick"/><path d="M50 35c19 0 31 12 27 29-2 10-9 19-16 27h16l8 15H15l8-15h16c-7-8-14-17-16-27-4-17 8-29 27-29z"/><path d="M12 109h76l5 17H7z"/>'};function svg(c,t){const white=c==='w',fill=white?'#f5f1e7':'#17191c',stroke=white?'#25282d':'#050607',detail=white?'#25282d':'#d7cdbb';return `<svg viewBox="0 0 100 140" aria-hidden="true" style="width:86%;height:86%;display:block;overflow:visible;filter:drop-shadow(0 2px 1px #0005)"><g fill="${fill}" stroke="${stroke}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">${P[t]}</g><style>.detail{fill:none;stroke:${detail};stroke-width:4}.thick{stroke-width:6}.eye{fill:${detail};stroke:none}</style></svg>`}function upgrade(root=document){root.querySelectorAll?.('.piece').forEach(el=>{if(el.dataset.vector)return;const m=M[el.textContent.trim()];if(m){el.dataset.vector='1';el.innerHTML=svg(...m);el.style.width='100%';el.style.height='100%';el.style.display='grid';el.style.placeItems='center'}});root.querySelectorAll?.('#promoChoices button').forEach(el=>{if(el.dataset.vector)return;const m=M[el.textContent.trim()];if(m){el.dataset.vector='1';el.innerHTML=svg(...m);el.style.width='68px';el.style.height='68px';el.style.padding='4px'}})}new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1)upgrade(n.parentElement||document)}))).observe(document.documentElement,{childList:true,subtree:true});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>upgrade());else upgrade();})();
+(()=>{
+  const MAP={
+    '♔':['w','k'],'♕':['w','q'],'♖':['w','r'],'♗':['w','b'],'♘':['w','n'],'♙':['w','p'],
+    '♚':['b','k'],'♛':['b','q'],'♜':['b','r'],'♝':['b','b'],'♞':['b','n'],'♟':['b','p']
+  };
+  const BASE='https://raw.githubusercontent.com/lichess-org/lila/master/public/piece/merida/';
+  const pieceUrl=(color,type)=>`${BASE}${color}${type.toUpperCase()}.svg`;
+
+  function installStyle(){
+    if(document.getElementById('merida-piece-style'))return;
+    const s=document.createElement('style');
+    s.id='merida-piece-style';
+    s.textContent=`
+      .piece>.meridaPiece{width:92%;height:92%;display:block;object-fit:contain;pointer-events:none;user-select:none;filter:drop-shadow(0 2px 1px #0005)}
+      .capturedPiece>.meridaPiece{width:100%;height:100%;filter:none}
+      #promoChoices button .meridaPiece{width:52px;height:52px;filter:drop-shadow(0 2px 1px #0004)}
+    `;
+    document.head.appendChild(s);
+  }
+
+  function makeImg(color,type){
+    const img=document.createElement('img');
+    img.className='meridaPiece';
+    img.src=pieceUrl(color,type);
+    img.alt='';
+    img.draggable=false;
+    img.decoding='async';
+    img.dataset.color=color;
+    img.dataset.type=type;
+    return img;
+  }
+
+  function upgradePiece(el){
+    if(!el||el.querySelector(':scope > img.meridaPiece'))return;
+    const match=MAP[(el.textContent||'').trim()];
+    if(!match)return;
+    el.textContent='';
+    el.appendChild(makeImg(...match));
+    el.dataset.vector='merida';
+  }
+
+  function upgradePromo(el){
+    if(!el||el.querySelector('img.meridaPiece'))return;
+    const match=MAP[(el.textContent||'').trim()];
+    if(!match)return;
+    el.textContent='';
+    el.appendChild(makeImg(...match));
+    el.dataset.vector='merida';
+  }
+
+  function upgrade(root=document){
+    installStyle();
+    if(root.nodeType===1){
+      if(root.matches?.('.piece'))upgradePiece(root);
+      if(root.matches?.('#promoChoices button'))upgradePromo(root);
+    }
+    root.querySelectorAll?.('.piece').forEach(upgradePiece);
+    root.querySelectorAll?.('#promoChoices button').forEach(upgradePromo);
+  }
+
+  new MutationObserver(mutations=>{
+    for(const mutation of mutations){
+      for(const node of mutation.addedNodes){
+        if(node.nodeType===1)upgrade(node);
+      }
+    }
+  }).observe(document.documentElement,{childList:true,subtree:true});
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>upgrade());
+  else upgrade();
+})();
