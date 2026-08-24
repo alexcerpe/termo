@@ -2,8 +2,23 @@
   const $=s=>document.querySelector(s);
   const MAX_LEN=200;
 
+  function supported(){
+    return Array.isArray(state?.messages);
+  }
+
   function getMessages(){
-    return Array.isArray(state?.messages)?state.messages:[];
+    return supported()?state.messages:[];
+  }
+
+  function setAvailability(){
+    const on=supported();
+    const section=$('.chatSection');
+    const divider=$('.sideDivider');
+    const mobile=$('#showChatMobile');
+    if(section)section.classList.toggle('hidden',!on);
+    if(divider)divider.classList.toggle('hidden',!on);
+    if(mobile)mobile.classList.toggle('hidden',!on);
+    return on;
   }
 
   function renderMessages(container){
@@ -37,7 +52,7 @@
   }
 
   function submit(input){
-    if(!input||!state?.ready||state.result)return;
+    if(!input||!supported()||!state?.ready||state.result)return;
     const text=input.value.trim().slice(0,MAX_LEN);
     if(!text)return;
     send('chat',{text});
@@ -59,6 +74,7 @@
   }
 
   function renderDesktop(){
+    if(!setAvailability())return;
     const log=$('#chatMessages');
     renderMessages(log);
     const input=$('#chatInput');
@@ -102,6 +118,7 @@
   }
 
   function openChat(){
+    if(!supported())return;
     $('#auxTitle').textContent='Chat';
     const content=$('#auxContent');
     content.innerHTML='';
@@ -119,5 +136,5 @@
 
   wireComposer(document);
   $('#showChatMobile').onclick=openChat;
-  renderDesktop();
+  setAvailability();
 })();
