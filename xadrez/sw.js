@@ -1,5 +1,5 @@
-const CACHE='xadrez-v5';
-const ASSETS=['./','./index.html','./manifest.webmanifest','./styles.css','./app.js','./pieces-render.js'];
+const CACHE='xadrez-v6';
+const ASSETS=['./','./index.html','./manifest.webmanifest','./styles.css','./chat.css','./app.js','./chat.js','./pieces-render.js'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
