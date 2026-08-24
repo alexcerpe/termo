@@ -7,6 +7,7 @@ export class ChessRoom extends DurableObject {
     this.env=env;
     this.sockets=new Map();
     this.state=null;
+    this.lastChatAt={p1:0,p2:0};
     ctx.blockConcurrencyWhile(async()=>{
       this.state=await ctx.storage.get('state')||null;
       if(this.state)this.ensureState();
@@ -19,6 +20,7 @@ export class ChessRoom extends DurableObject {
     this.state.rematch||={p1:false,p2:false};
     this.state.round||=1;
     this.state.moves||=[];
+    if(!Array.isArray(this.state.messages))this.state.messages=[];
     if(this.state.minutes===undefined)this.state.minutes=5;
     if(this.state.minutes===0){
       this.state.whiteMs=null;
@@ -117,7 +119,7 @@ export class ChessRoom extends DurableObject {
     return {
       fen:new Chess().fen(),minutes,whiteMs:ms,blackMs:ms,turn:'w',turnStartedAt:null,
       started:false,ready:false,connected:{p1:false,p2:false},tokens:{p1:null,p2:null},
-      colors:null,lastMove:null,moves:[],result:null,rematch:{p1:false,p2:false},round:1
+      colors:null,lastMove:null,moves:[],messages:[],result:null,rematch:{p1:false,p2:false},round:1
     };
   }
 
@@ -127,6 +129,17 @@ export class ChessRoom extends DurableObject {
     let m;try{m=JSON.parse(event.data)}catch{return}
     const role=this.sockets.get(socket);if(!role)return;
 
+    if(m.type==='chat'){
+      if(!this.state.ready||this.state.result)return;
+      const now=Date.now();
+      if(now-(this.lastChatAt[role]||0)<400)return;
+      const text=String(m.text??'').replace(/\s+/g,' ').trim().slice(0,200);
+      if(!text)return;
+      this.lastChatAt[role]=now;
+      this.state.messages.push({role,color:this.state.colors?.[role]||null,text,at:now});
+      if(this.state.messages.length>50)this.state.messages=this.state.messages.slice(-50);
+      await this.save();this.broadcast();return;
+    }
     if(m.type==='sync'){
       this.consumeClock();await this.save();this.broadcast();await this.publish(room);return;
     }
@@ -190,7 +203,7 @@ export class ChessRoom extends DurableObject {
     const ms=this.state.minutes===0?null:this.state.minutes*60000;
     Object.assign(this.state,{
       fen:new Chess().fen(),whiteMs:ms,blackMs:ms,turn:'w',turnStartedAt:null,started:false,
-      ready:true,lastMove:null,moves:[],result:null,rematch:{p1:false,p2:false},round:this.state.round+1
+      ready:true,lastMove:null,moves:[],messages:[],result:null,rematch:{p1:false,p2:false},round:this.state.round+1
     });
     this.randomizeColors();
   }
