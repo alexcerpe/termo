@@ -83,8 +83,8 @@
           <div class="sideTitle">Peças capturadas</div>
           <div id="capturedPieces"></div>
         </div>
-        <div class="sideDivider"></div>
-        <div class="chatSection">
+        <div class="sideDivider hidden"></div>
+        <div class="chatSection hidden">
           <div class="sideTitle">Chat</div>
           <div id="chatMessages" class="chatMessages"></div>
           <div class="chatComposer">
@@ -109,7 +109,7 @@
         <div class="mobileAux">
           <button id="showCapturedMobile" class="btn ghost">Peças</button>
           <button id="showHistoryMobile" class="btn ghost">Histórico</button>
-          <button id="showChatMobile" class="btn ghost">Chat</button>
+          <button id="showChatMobile" class="btn ghost hidden">Chat</button>
         </div>
       </div>
 
@@ -174,7 +174,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="/xadrez/pieces-render.js?v=8"></script>
 <script src="/xadrez/app.js?v=6"></script>
-<script src="/xadrez/chat.js?v=1"></script>
+<script src="/xadrez/chat.js?v=2"></script>
 <script>
 document.getElementById('shareWhatsapp').onclick=()=>{
   const text='Vamos jogar um Xadrez!?\n'+invite();
