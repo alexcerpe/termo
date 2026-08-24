@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#17191c">
 <link rel="manifest" href="/xadrez/manifest.webmanifest">
 <link rel="stylesheet" href="/xadrez/styles.css?v=7">
+<link rel="stylesheet" href="/xadrez/chat.css?v=1">
 <title>Xadrez Online</title>
 </head>
 <body>
@@ -77,9 +78,20 @@
 
   <section id="game" class="hidden">
     <div class="gameLayout">
-      <aside class="sidePanel">
-        <div class="sideTitle">Peças capturadas</div>
-        <div id="capturedPieces"></div>
+      <aside class="sidePanel leftPanel">
+        <div class="capturedSection">
+          <div class="sideTitle">Peças capturadas</div>
+          <div id="capturedPieces"></div>
+        </div>
+        <div class="sideDivider"></div>
+        <div class="chatSection">
+          <div class="sideTitle">Chat</div>
+          <div id="chatMessages" class="chatMessages"></div>
+          <div class="chatComposer">
+            <input id="chatInput" class="chatInput" maxlength="200" autocomplete="off" placeholder="Digite uma mensagem…">
+            <button id="chatSend" class="btn primary chatSend" type="button">Enviar</button>
+          </div>
+        </div>
       </aside>
 
       <div class="gameCenter">
@@ -97,6 +109,7 @@
         <div class="mobileAux">
           <button id="showCapturedMobile" class="btn ghost">Peças</button>
           <button id="showHistoryMobile" class="btn ghost">Histórico</button>
+          <button id="showChatMobile" class="btn ghost">Chat</button>
         </div>
       </div>
 
@@ -161,6 +174,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="/xadrez/pieces-render.js?v=8"></script>
 <script src="/xadrez/app.js?v=6"></script>
+<script src="/xadrez/chat.js?v=1"></script>
 <script>
 document.getElementById('shareWhatsapp').onclick=()=>{
   const text='Vamos jogar um Xadrez!?\n'+invite();
