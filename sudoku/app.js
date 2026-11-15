@@ -138,7 +138,6 @@
       cell.type = 'button';
       cell.className = 'cell';
       cell.dataset.index = String(i);
-      cell.setAttribute('role', 'gridcell');
       if (c === 2 || c === 5) cell.classList.add('box-right');
       if (r === 2 || r === 5) cell.classList.add('box-bottom');
       if (c === 8) cell.classList.add('last-col');
