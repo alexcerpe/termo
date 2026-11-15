@@ -35,3 +35,8 @@ body{display:flex;justify-content:center}
   body.gameMode{height:100dvh;overflow:hidden}.gameMode .app{height:100dvh;padding:0 10px;display:flex;flex-direction:column}.gameMode .brand{display:none}#game:not(.hidden){width:100%;flex:1;min-height:0}.gameMode .gameLayout{height:100%;display:flex;align-items:center;justify-content:center}.gameMode .sidePanel{display:none}.gameMode .gameCenter{width:min(100%,calc(100dvh - 145px));max-width:620px;display:flex;flex-direction:column;justify-content:center}.gameMode .board{width:100%;aspect-ratio:1/1;margin:0 auto}.gameMode .player{padding:7px 10px;margin:4px 0}.gameMode .clock{font-size:24px}.gameMode .status{font-size:13px;margin:3px 0}.gameMode .connection{margin:3px 0}.mobileAux{display:flex}.topControls{top:max(7px,env(safe-area-inset-top));right:7px}.topControl{height:32px;min-width:32px;padding:5px 7px}.resignTop{font-size:0;width:32px}.resignTop:after{content:'✕';font-size:15px}
 }
 @media(max-width:420px){.gameMode .gameCenter{width:min(100%,calc(100dvh - 150px))}.mobileAux .btn{padding:7px 10px;font-size:12px}}
+
+/* Navegação discreta entre jogos, apenas na tela inicial. */
+.game-links{display:flex;justify-content:center;gap:10px;margin:0 0 13px}
+.game-links a{border:1px solid #ffffff24;background:#25282d;border-radius:25px;padding:7px 17px;text-decoration:none;color:#d6e4f6;font-size:13px;font-weight:800}
+.game-links a:hover{background:#354454}
