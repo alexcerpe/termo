@@ -17,6 +17,8 @@
   let clockAnchor = 0;
   let toastTimer = 0;
   let clockTicks = 0;
+  let paused = false;
+  let pendingHint = null;
 
   function read(key) {
     try { return JSON.parse(localStorage.getItem(key)); }
@@ -58,7 +60,7 @@
       entries: Array(81).fill(0), notes: Array(81).fill(0),
       history: [], future: [],
       elapsedMs: 0, mistakes: 0, hints: 0, completed: false,
-      startedAt: Date.now()
+      startedAt: Date.now(), statsRecorded: false
     };
   }
 
@@ -77,7 +79,7 @@
   }
 
   function startClock() {
-    if (game && !game.completed && !document.hidden) clockAnchor = performance.now();
+    if (game && !game.completed && !paused && !document.hidden) clockAnchor = performance.now();
   }
 
   function saveGame() {
@@ -96,6 +98,8 @@
     if (selected < 0) selected = game.puzzle.findIndex(n => !n);
     if (selected < 0) selected = 0;
     clockTicks = 0;
+    paused = false;
+    pendingHint = null;
     $('difficulty').value = difficulty;
     $('freeMode').classList.toggle('active', mode === 'free');
     $('dailyMode').classList.toggle('active', mode === 'daily');
@@ -163,6 +167,7 @@
       cell.classList.toggle('same', i !== selected && Boolean(selectedValue) && selectedValue === value);
       cell.classList.toggle('selected', i === selected);
       cell.classList.toggle('invalid', invalid);
+      cell.classList.toggle('correct-hint', Boolean(pendingHint) && pendingHint.index === i);
       cell.setAttribute('aria-selected', String(i === selected));
       cell.tabIndex = i === selected ? 0 : -1;
 
@@ -203,18 +208,32 @@
     $('hintValue').textContent = game.hints;
     $('timeValue').textContent = timeLabel(elapsedMs());
 
-    const summary = (read(STATS_KEY) || {})[game.difficulty];
+    const allStats = read(STATS_KEY) || {};
+    const summary = allStats[game.difficulty];
     $('bestValue').textContent = summary?.bestMs != null ? timeLabel(summary.bestMs) : '—';
+    $('completedValue').textContent = summary?.completed || 0;
+    $('averageValue').textContent = summary?.totalMs && summary?.completed ?
+      timeLabel(summary.totalMs / summary.completed) : '—';
+    $('streakValue').textContent = dailyStreak(allStats.dailyCompleted || {});
+    $('pauseButton').disabled = game.completed;
+    $('pauseButton').textContent = paused ? 'Retomar' : 'Pausar';
+    $('pauseButton').setAttribute('aria-pressed', String(paused));
+    $('board').classList.toggle('paused', paused);
+    $('boardCover').classList.toggle('hidden', !paused);
+    $('autoNotesButton').disabled = game.completed || paused;
+    $('hintText').textContent = pendingHint ?
+      pendingHint.technique + ': ' + pendingHint.explanation + ' Clique em Dica novamente para revelar o número.' :
+      'Selecione uma casa e toque em Dica para receber uma orientação. Um segundo toque revela o número.';
     $('notesButton').classList.toggle('active', notesMode);
     $('notesButton').setAttribute('aria-pressed', String(notesMode));
     $('notesState').textContent = notesMode ? 'Ligadas' : 'Desligadas';
     $('showErrors').checked = showErrors;
-    $('undoButton').disabled = game.completed || game.history.length === 0;
-    $('redoButton').disabled = game.completed || game.future.length === 0;
-    $('eraseButton').disabled = game.completed;
-    $('hintButton').disabled = game.completed;
-    $('checkButton').disabled = game.completed;
-    $('notesButton').disabled = game.completed;
+    $('undoButton').disabled = game.completed || paused || game.history.length === 0;
+    $('redoButton').disabled = game.completed || paused || game.future.length === 0;
+    $('eraseButton').disabled = game.completed || paused;
+    $('hintButton').disabled = game.completed || paused;
+    $('checkButton').disabled = game.completed || paused;
+    $('notesButton').disabled = game.completed || paused;
 
     const count = Array(10).fill(0);
     for (let i = 0; i < 81; i++) if (valueAt(i)) count[valueAt(i)]++;
@@ -222,12 +241,12 @@
       const n = Number(button.dataset.digit);
       button.querySelector('small').textContent = Math.max(0, 9 - count[n]) + ' rest.';
       button.classList.toggle('active', n === selectedValue);
-      button.disabled = game.completed;
+      button.disabled = game.completed || paused;
     });
   }
 
   function selectCell(index, focus = false) {
-    if (index < 0 || index >= 81) return;
+    if (paused || index < 0 || index >= 81) return;
     selected = index;
     render();
     if (focus) buttons[index].focus({ preventScroll: true });
@@ -243,7 +262,7 @@
   }
 
   function edit(change) {
-    if (game.completed) return;
+    if (game.completed || paused) return;
     const previous = snapshot();
     change();
     if (previous.entries.every((v, i) => v === game.entries[i]) &&
@@ -251,13 +270,14 @@
     game.history.push(previous);
     if (game.history.length > MAX_HISTORY) game.history.shift();
     game.future = [];
+    pendingHint = null;
     saveGame();
     render();
     checkVictory();
   }
 
   function input(number) {
-    if (!game || game.completed) return;
+    if (!game || game.completed || paused) return;
     if (game.puzzle[selected]) return toast('Este número faz parte do desafio e não pode ser alterado.');
     if (notesMode) {
       if (game.entries[selected]) return toast('Apague o número antes de escrever anotações.');
@@ -274,12 +294,12 @@
   }
 
   function erase() {
-    if (!game || game.completed || game.puzzle[selected]) return;
+    if (!game || game.completed || paused || game.puzzle[selected]) return;
     edit(() => { game.entries[selected] = 0; game.notes[selected] = 0; });
   }
 
   function undo() {
-    if (!game || game.completed || !game.history.length) return;
+    if (!game || game.completed || paused || !game.history.length) return;
     game.future.push(snapshot());
     applySnapshot(game.history.pop());
     saveGame();
@@ -287,7 +307,7 @@
   }
 
   function redo() {
-    if (!game || game.completed || !game.future.length) return;
+    if (!game || game.completed || paused || !game.future.length) return;
     game.history.push(snapshot());
     applySnapshot(game.future.pop());
     saveGame();
@@ -296,24 +316,90 @@
   }
 
   function hint() {
-    if (!game || game.completed) return;
-    let index = selected;
-    if (game.puzzle[index] || game.entries[index] === game.solution[index]) {
-      index = game.solution.findIndex((n, i) => !game.puzzle[i] && game.entries[i] !== n);
+    if (!game || game.completed || paused) return;
+    if (pendingHint) {
+      const { index, number } = pendingHint;
+      selected = index;
+      pendingHint = null;
+      edit(() => {
+        game.entries[index] = number;
+        game.notes[index] = 0;
+        for (const peer of peers[index]) game.notes[peer] &= ~(1 << number);
+        game.hints++;
+      });
+      return;
     }
-    if (index < 0) return;
-    selected = index;
+    const board = Array.from({ length: 81 }, (_, i) => valueAt(i));
+    const explanation = Engine.explainNext(board, game.solution);
+    if (!explanation) return;
+    pendingHint = explanation;
+    selected = explanation.index;
+    render();
+    toast(explanation.technique + ': veja a explicação ao lado do tabuleiro.');
+  }
+
+  function fillCandidates() {
+    if (!game || game.completed || paused) return;
+    const board = Array.from({ length: 81 }, (_, i) => valueAt(i));
+    if (board.some((n, i) => n && conflicting(i))) {
+      toast('Resolva os conflitos no tabuleiro antes de preencher as anotações.');
+      return;
+    }
     edit(() => {
-      const number = game.solution[index];
-      game.entries[index] = number;
-      game.notes[index] = 0;
-      for (const peer of peers[index]) game.notes[peer] &= ~(1 << number);
-      game.hints++;
+      for (let i = 0; i < 81; i++) {
+        game.notes[i] = board[i] ? 0 : Engine.candidateMask(board, i);
+      }
     });
+    toast('Anotações possíveis preenchidas. Use Desfazer para restaurar as anteriores.');
+  }
+
+  function togglePause() {
+    if (!game || game.completed) return;
+    if (paused) {
+      paused = false;
+      startClock();
+    } else {
+      stopClock();
+      paused = true;
+    }
+    saveGame();
+    render();
+  }
+
+  function dailyStreak(completions) {
+    const dates = new Set(Object.keys(completions).filter(key => completions[key]).map(key => key.slice(0, 10)));
+    let today = localDate();
+    const yesterday = new Date(Date.parse(today + 'T12:00:00Z') - 86400000).toISOString().slice(0, 10);
+    if (!dates.has(today)) today = yesterday;
+    let count = 0;
+    let cursor = Date.parse(today + 'T12:00:00Z');
+    while (dates.has(new Date(cursor).toISOString().slice(0, 10))) {
+      count++;
+      cursor -= 86400000;
+    }
+    return count;
+  }
+
+  function shareResult() {
+    if (!game) return;
+    const link = location.origin + '/sudoku/' +
+      (game.mode === 'daily' ? '?modo=diario&nivel=' + game.difficulty : '');
+    const label = game.mode === 'daily' ? 'Desafio diário ' + game.date : 'Sudoku livre';
+    const result = game.completed ?
+      '\\nConcluído em ' + timeLabel(game.elapsedMs) + ' | erros: ' + game.mistakes + ' | dicas: ' + game.hints :
+      '\\nConsegue resolver?';
+    const text = 'SUDOKU • ' + label + ' • ' + NAMES[game.difficulty] + result + '\\n' + link;
+    if (navigator.share) {
+      navigator.share({ title: 'Sudoku', text }).catch(() => {});
+    } else if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).then(() => toast('Convite copiado!')).catch(() => window.prompt('Copie o convite:', text));
+    } else {
+      window.prompt('Copie o convite:', text);
+    }
   }
 
   function verify() {
-    if (!game || game.completed) return;
+    if (!game || game.completed || paused) return;
     const incorrect = game.entries.filter((n, i) => n !== 0 && n !== game.solution[i]).length;
     if (incorrect) toast(incorrect + (incorrect === 1 ? ' número incorreto no tabuleiro.' : ' números incorretos no tabuleiro.'));
     else toast('Tudo certo até aqui. Continue!');
@@ -323,6 +409,12 @@
     const stats = read(STATS_KEY) || {};
     const record = stats[game.difficulty] || { completed: 0, bestMs: null };
     record.completed++;
+    record.totalMs = (record.totalMs || 0) + game.elapsedMs;
+    record.totalMistakes = (record.totalMistakes || 0) + game.mistakes;
+    if (game.mode === 'daily') {
+      stats.dailyCompleted ||= {};
+      stats.dailyCompleted[game.date + ':' + game.difficulty] = true;
+    }
     if (game.hints === 0 && (record.bestMs == null || game.elapsedMs < record.bestMs)) {
       record.bestMs = game.elapsedMs;
     }
@@ -336,7 +428,7 @@
     if (!solved) return;
     stopClock();
     game.completed = true;
-    finishStats();
+    if (!game.statsRecorded) { finishStats(); game.statsRecorded = true; }
     saveGame();
     render();
     $('resultDescription').textContent = 'Você resolveu um Sudoku ' +
@@ -393,6 +485,11 @@
     $('dailyMode').addEventListener('click', () => switchGame('daily', game.difficulty));
     $('difficulty').addEventListener('change', event => switchGame(game.mode, event.target.value));
     $('newGame').addEventListener('click', newGame);
+    $('pauseButton').addEventListener('click', togglePause);
+    $('resumeButton').addEventListener('click', togglePause);
+    $('autoNotesButton').addEventListener('click', fillCandidates);
+    $('shareButton').addEventListener('click', shareResult);
+    $('resultShare').addEventListener('click', shareResult);
     $('notesButton').addEventListener('click', () => {
       notesMode = !notesMode;
       saveGame();
@@ -435,6 +532,11 @@
         return;
       }
       if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (paused) {
+        if (key === 'Escape' || key === ' ') { event.preventDefault(); togglePause(); }
+        return;
+      }
+      if (key === 'Escape') { event.preventDefault(); togglePause(); return; }
       if (/^[1-9]$/.test(key)) { event.preventDefault(); input(Number(key)); }
       else if (key.startsWith('Arrow')) { event.preventDefault(); moveSelection(key); }
       else if (key === 'Backspace' || key === 'Delete' || key === '0') {
@@ -458,8 +560,11 @@
   }
 
   const preferences = read(SETTINGS_KEY) || {};
-  const initialMode = preferences.mode === 'daily' ? 'daily' : 'free';
-  const initialDifficulty = NAMES[preferences.difficulty] ? preferences.difficulty : 'medium';
+  const params = new URLSearchParams(location.search);
+  const requestedMode = params.get('modo') === 'diario' ? 'daily' : null;
+  const requestedDifficulty = NAMES[params.get('nivel')] ? params.get('nivel') : null;
+  const initialMode = requestedMode || (preferences.mode === 'daily' ? 'daily' : 'free');
+  const initialDifficulty = requestedDifficulty || (NAMES[preferences.difficulty] ? preferences.difficulty : 'medium');
   notesMode = Boolean(preferences.notesMode);
   showErrors = Boolean(preferences.showErrors);
   buildBoard();
