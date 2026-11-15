@@ -8,9 +8,9 @@
   <title>Sudoku | Jogos do Alex</title>
   <link rel="manifest" href="/sudoku/manifest.webmanifest">
   <link rel="icon" href="/sudoku/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/sudoku/styles.css?v=1">
-  <script src="/sudoku/engine.js?v=1" defer></script>
-  <script src="/sudoku/app.js?v=1" defer></script>
+  <link rel="stylesheet" href="/sudoku/styles.css?v=2">
+  <script src="/sudoku/engine.js?v=2" defer></script>
+  <script src="/sudoku/app.js?v=2" defer></script>
 </head>
 <body>
   <div class="app">
@@ -40,6 +40,7 @@
                 <option value="expert">Especialista</option>
               </select>
             </label>
+            <button type="button" id="pauseButton" class="button quiet" aria-pressed="false">Pausar</button>
             <button type="button" id="newGame" class="button primary">Novo jogo</button>
           </div>
         </div>
@@ -48,7 +49,13 @@
           <div id="boardStatus" role="status" aria-live="polite">Preparando tabuleiro…</div>
           <span id="progressText">0/81</span>
         </div>
-        <div id="board" class="board" role="group" aria-label="Tabuleiro de Sudoku com nove linhas e nove colunas"></div>
+        <div class="board-shell">
+          <div id="board" class="board" role="group" aria-label="Tabuleiro de Sudoku com nove linhas e nove colunas"></div>
+          <div id="boardCover" class="board-cover hidden" aria-live="polite">
+            <strong>Partida pausada</strong><span>Use o botão Retomar para continuar.</span>
+            <button type="button" id="resumeButton" class="button primary">Retomar</button>
+          </div>
+        </div>
 
         <div class="digit-pad" id="digitPad" aria-label="Digitar um número">
           <button type="button" data-digit="1">1<small></small></button>
@@ -82,14 +89,25 @@
             <div class="metric"><span>Melhor tempo</span><strong id="bestValue">—</strong></div>
           </div>
           <p id="dailyLabel" class="note hidden"></p>
+          <div class="stats-extra" aria-label="Estatísticas">
+            <div><span>Concluídos</span><strong id="completedValue">0</strong></div>
+            <div><span>Média</span><strong id="averageValue">—</strong></div>
+            <div><span>Dias seguidos</span><strong id="streakValue">0</strong></div>
+          </div>
+          <button type="button" id="shareButton" class="button share-button">Compartilhar desafio / resultado</button>
         </div>
         <div class="sidebar-card">
           <h2>Preferências</h2>
+          <button type="button" id="autoNotesButton" class="button auto-notes">Preencher anotações possíveis</button>
           <label class="check-setting">
             <input type="checkbox" id="showErrors">
             <span>Mostrar números incorretos</span>
           </label>
           <p class="note">Desligado: destaca apenas conflitos nas linhas, colunas e blocos. Ligado: também destaca números diferentes da solução.</p>
+        </div>
+        <div class="sidebar-card hint-card">
+          <h2>Dica lógica</h2>
+          <p id="hintText" class="note">Selecione uma casa e toque em Dica para receber uma orientação. Um segundo toque revela o número.</p>
         </div>
         <div class="sidebar-card howto">
           <h2>Como jogar</h2>
@@ -108,6 +126,7 @@
       <h2 id="resultTitle">Tabuleiro concluído!</h2>
       <p id="resultDescription"></p>
       <div id="resultDetails" class="result-details"></div>
+      <button type="button" id="resultShare" class="button">Compartilhar resultado</button>
       <button type="button" id="resultNewGame" class="button primary">Próxima partida</button>
       <button type="button" id="resultClose" class="button quiet">Fechar</button>
     </div>
