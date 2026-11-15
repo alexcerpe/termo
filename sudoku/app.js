@@ -386,9 +386,9 @@
       (game.mode === 'daily' ? '?modo=diario&nivel=' + game.difficulty : '');
     const label = game.mode === 'daily' ? 'Desafio diário ' + game.date : 'Sudoku livre';
     const result = game.completed ?
-      '\\nConcluído em ' + timeLabel(game.elapsedMs) + ' | erros: ' + game.mistakes + ' | dicas: ' + game.hints :
-      '\\nConsegue resolver?';
-    const text = 'SUDOKU • ' + label + ' • ' + NAMES[game.difficulty] + result + '\\n' + link;
+      '\nConcluído em ' + timeLabel(game.elapsedMs) + ' | erros: ' + game.mistakes + ' | dicas: ' + game.hints :
+      '\nConsegue resolver?';
+    const text = 'SUDOKU • ' + label + ' • ' + NAMES[game.difficulty] + result + '\n' + link;
     if (navigator.share) {
       navigator.share({ title: 'Sudoku', text }).catch(() => {});
     } else if (navigator.clipboard?.writeText) {
