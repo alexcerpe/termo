@@ -322,6 +322,9 @@
       font-size: 15px;
     }
 
+    .game-links { display:flex; justify-content:center; gap:14px; align-items:center; flex-wrap:wrap; margin-top:2px; }
+    .game-links a { color:#ffffffd9; background:#403941; border:1px solid #ffffff2a; border-radius:20px; text-decoration:none; font-size:12px; padding:5px 14px; font-weight:700; }
+    .game-links a:hover { background:#4a434c; }
     .action-button.secondary { background: #49424b; }
     .action-button.danger { background: var(--danger); }
 
@@ -390,6 +393,10 @@
     <section class="board" id="board" aria-label="Tabuleiro"></section>
 
     <section class="keyboard" id="keyboard" aria-label="Teclado virtual"></section>
+    <nav class="game-links" aria-label="Outros jogos">
+      <a href="/xadrez/">Xadrez</a>
+      <a href="/sudoku/">Sudoku</a>
+    </nav>
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>

@@ -1,0 +1,18 @@
+{
+  "name": "Sudoku | Jogos do Alex",
+  "short_name": "Sudoku",
+  "description": "Sudoku clássico offline com desafios diários",
+  "start_url": "/sudoku/",
+  "scope": "/sudoku/",
+  "display": "standalone",
+  "background_color": "#17191c",
+  "theme_color": "#17191c",
+  "icons": [
+    {
+      "src": "/sudoku/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
