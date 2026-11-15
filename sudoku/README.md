@@ -8,10 +8,11 @@ Nova área independente em `/sudoku/` do repositório `alexcerpe/termo`. Não re
 - Geração determinística por semente, com **uma única solução** validada por backtracking.
 - Quatro níveis por quantidade aproximada de casas pré-preenchidas (44, 38, 32 e 28).
 - Modo livre com partidas ilimitadas e desafio diário separado por nível.
-- Modo de anotações por célula, exclusão automática de notas relacionadas ao inserir a solução correta, apagar, desfazer e refazer.
-- Dicas que completam uma casa, verificação de entradas, conflitos e opção de revelar respostas incorretas.
-- Cronômetro (pausado enquanto a página não está visível), indicadores, estatísticas e melhor tempo sem dicas.
+- Modo de anotações por célula, **preenchimento automático de candidatos**, exclusão automática de notas relacionadas ao inserir a solução correta, apagar, desfazer e refazer.
+- **Dicas explicativas em duas etapas** (candidato único, único oculto, correção ou revelação), verificação de entradas, conflitos e opção de revelar respostas incorretas.
+- Cronômetro (pausa manual e pausa quando a página não está visível), indicadores, estatísticas, média, sequência de dias e melhor tempo sem dicas.
 - Progresso local persistido por nível e modo usando `localStorage` (sem cadastro).
+- Compartilhamento de convite ou resultado sem entregar a solução; navegação entre Termo, Xadrez e Sudoku.
 - Arquivos estáticos disponíveis offline após o primeiro carregamento e instalação do Service Worker.
 - Nenhuma dependência de API, CDN ou backend.
 
@@ -21,9 +22,10 @@ Rodar a partir da raiz do repositório:
 
 ```sh
 node sudoku/tests/engine.test.cjs
+node sudoku/tests/app.test.cjs
 ```
 
-Os testes geram 80 tabuleiros, verificam regras completas (linhas, colunas e blocos), soluções únicas e reprodução determinística.
+Os testes geram 80 tabuleiros, verificam regras completas (linhas, colunas e blocos), soluções únicas e reprodução determinística. Os testes de interface simulam navegação, entrada de números, pausa, anotações, dicas, desfazer/refazer e conclusão. O GitHub Actions executa os testes a cada alteração relevante.
 
 ## Regras técnicas e limitações
 
@@ -32,15 +34,15 @@ Os testes geram 80 tabuleiros, verificam regras completas (linhas, colunas e blo
 3. Toda persistência é local, portanto trocar navegador/dispositivo não sincroniza progresso ou recordes. Dados locais podem ser alterados pelo jogador; não são adequados a rankings competitivos.
 4. O cronômetro pausa quando a aba fica oculta; para competições online seriam necessárias regras de cronometragem e auditoria definidas no servidor.
 5. O Service Worker usa cache de versão. Alterações nos arquivos devem atualizar a versão de cache e as URLs dos scripts/estilos para assegurar atualização offline.
-6. As estatísticas não são retroativamente corrigidas caso o jogador reinicie um desafio já concluído.
+6. Rejogar um desafio diário concluído pode incrementar a contagem total de vitórias, porém a sequência de dias contabiliza cada data apenas uma vez.
 
 ## Próximas etapas propostas
 
-**Experiência:** animações discretas, temas claro/escuro, contraste e acessibilidade, sons opcionais, favoritos, controle de erros e notas automáticas.
+**Experiência:** animações discretas, temas claro/escuro, contraste e acessibilidade, sons opcionais e regras opcionais de penalização por erros.
 
 **Jogo inteligente:** solucionador explicativo (single, hidden single, pares, locked candidates, X-Wing etc.), pistas graduais, classificação real de dificuldade, modo de treinamento e revisão.
 
-**Diário e progressão:** calendário de desafios, sequências, conquistas, histórico de partidas, exportação de resultados sem spoilers e desafios compartilháveis por URL.
+**Diário e progressão:** calendário completo de desafios, conquistas, histórico de partidas e links de desafios livres com tabuleiros idênticos entre jogadores.
 
 **Social e competição (precisa de backend):** contas, ranking validado, desafios assíncronos entre amigos, salas multiplayer em tempo real, torneios, moderação e medidas anti-fraude.
 
@@ -53,6 +55,7 @@ Os testes geram 80 tabuleiros, verificam regras completas (linhas, colunas e blo
 - `engine.js`: regras do gerador e validador
 - `app.js`: interação, estado, autosave e estatísticas
 - `manifest.webmanifest`, `icon.svg`, `sw.js`: recursos de aplicativo e offline
-- `tests/engine.test.cjs`: testes de regressão sem dependências
+- `tests/engine.test.cjs` e `tests/app.test.cjs`: testes de regressão sem dependências
+- `.github/workflows/sudoku.yml`: validação automática de regressões
 
-Este módulo foi criado em uma branch separada e deve ser revisado antes do merge na branch de produção.
+O módulo foi desenvolvido em uma branch separada, validado com testes locais e publicado após o merge da branch de produção. Para uma próxima versão, validar acessibilidade em dispositivos reais e classificar puzzles por técnicas lógicas humanas.
