@@ -120,5 +120,59 @@
     return best; // sempre solução única; quantidade de pistas pode variar
   }
 
-  window.SudokuEngine = Object.freeze({ generate, countSolutions, TARGET_CLUES });
+
+  // Explicações lógicas: candidato único e único oculto em linha/coluna/bloco.
+  // Uma casa errada é corrigida primeiro para não inferir candidatos inválidos.
+  function explainNext(input, solution) {
+    const board = input.slice();
+    for (let i = 0; i < 81; i++) {
+      if (board[i] && board[i] !== solution[i]) {
+        return {
+          index: i, number: solution[i], technique: 'Correção',
+          explanation: 'O número desta casa está incorreto. Revise os números relacionados antes de prosseguir.'
+        };
+      }
+    }
+
+    const masks = board.map((value, i) => value ? 0 : candidateMask(board, i));
+    for (let i = 0; i < 81; i++) {
+      const mask = masks[i];
+      if (mask && !(mask & (mask - 1))) {
+        return {
+          index: i, number: solution[i], technique: 'Candidato único',
+          explanation: 'Nesta casa só resta um número possível. Os outros oito já aparecem na linha, coluna ou bloco 3×3.'
+        };
+      }
+    }
+
+    const units = [];
+    for (let row = 0; row < 9; row++)
+      units.push({ label: 'linha ' + (row + 1), positions: Array.from({ length: 9 }, (_, col) => row * 9 + col) });
+    for (let col = 0; col < 9; col++)
+      units.push({ label: 'coluna ' + (col + 1), positions: Array.from({ length: 9 }, (_, row) => row * 9 + col) });
+    for (let box = 0; box < 9; box++) {
+      const br = Math.floor(box / 3) * 3, bc = (box % 3) * 3;
+      units.push({ label: 'bloco 3×3', positions: Array.from({ length: 9 }, (_, i) => (br + Math.floor(i / 3)) * 9 + bc + i % 3) });
+    }
+    for (const unit of units) {
+      for (let number = 1; number <= 9; number++) {
+        const positions = unit.positions.filter(i => masks[i] & (1 << number));
+        if (positions.length === 1) {
+          return {
+            index: positions[0], number, technique: 'Único oculto',
+            explanation: 'Na ' + unit.label + ', apenas esta casa pode receber o número ' + number + '.'
+          };
+        }
+      }
+    }
+
+    const index = board.findIndex(value => value === 0);
+    if (index < 0) return null;
+    return {
+      index, number: solution[index], technique: 'Revelação',
+      explanation: 'Esta posição exige uma técnica mais avançada. Se quiser, revele o número e continue o desafio.'
+    };
+  }
+
+  window.SudokuEngine = Object.freeze({ generate, countSolutions, candidateMask, explainNext, TARGET_CLUES });
 })();
