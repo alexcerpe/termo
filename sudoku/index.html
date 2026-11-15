@@ -6,6 +6,8 @@
   <meta name="theme-color" content="#17191c">
   <meta name="description" content="Sudoku clássico online: desafios infinitos e diários, anotações, dicas e estatísticas.">
   <title>Sudoku | Jogos do Alex</title>
+  <link rel="manifest" href="/sudoku/manifest.webmanifest">
+  <link rel="icon" href="/sudoku/icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/sudoku/styles.css?v=1">
   <script src="/sudoku/engine.js?v=1" defer></script>
   <script src="/sudoku/app.js?v=1" defer></script>
@@ -46,7 +48,7 @@
           <div id="boardStatus" role="status" aria-live="polite">Preparando tabuleiro…</div>
           <span id="progressText">0/81</span>
         </div>
-        <div id="board" class="board" role="grid" aria-label="Tabuleiro de Sudoku com nove linhas e nove colunas"></div>
+        <div id="board" class="board" role="group" aria-label="Tabuleiro de Sudoku com nove linhas e nove colunas"></div>
 
         <div class="digit-pad" id="digitPad" aria-label="Digitar um número">
           <button type="button" data-digit="1">1<small></small></button>
@@ -111,5 +113,10 @@
     </div>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("/sudoku/sw.js").catch(() => {}));
+    }
+  </script>
 </body>
 </html>
