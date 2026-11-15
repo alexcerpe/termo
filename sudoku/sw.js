@@ -1,8 +1,8 @@
-/* Apenas os recursos do Sudoku; não interfere no Termo ou no Xadrez. */
-const CACHE = 'sudoku-offline-v1';
+/* Cache exclusivo do /sudoku/. Navegação busca a versão nova primeiro. */
+const CACHE = 'sudoku-offline-v2';
 const ASSETS = [
   '/sudoku/', '/sudoku/index.html',
-  '/sudoku/styles.css?v=1', '/sudoku/engine.js?v=1', '/sudoku/app.js?v=1',
+  '/sudoku/styles.css?v=2', '/sudoku/engine.js?v=2', '/sudoku/app.js?v=2',
   '/sudoku/manifest.webmanifest', '/sudoku/icon.svg'
 ];
 
@@ -25,13 +25,25 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin ||
       !url.pathname.startsWith('/sudoku/')) return;
-  event.respondWith(
-    caches.match(request).then(cached => cached || fetch(request).then(response => {
-      if (response.ok) {
-        const copy = response.clone();
-        caches.open(CACHE).then(cache => cache.put(request, copy));
-      }
-      return response;
-    }))
-  );
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request).then(response => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE).then(cache => cache.put(request, copy));
+        }
+        return response;
+      }).catch(() => caches.match(request).then(cached => cached || caches.match('/sudoku/')))
+    );
+  } else {
+    event.respondWith(
+      caches.match(request).then(cached => cached || fetch(request).then(response => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE).then(cache => cache.put(request, copy));
+        }
+        return response;
+      }))
+    );
+  }
 });
